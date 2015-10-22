@@ -6,16 +6,16 @@ Simulation of a network of electric water heaters
 ### Mac without Virtualenv
 
 ```bash
-$ brew install python
-$ pip install -r requirements.txt
+$ brew install python3
+$ pip3 install -r requirements.txt
 ```
 
 ### Mac with Virtualenv
 
 ```bash
-$ brew install python
-$ pip install virtualenv
+$ brew3 install python
+$ pip3 install virtualenv
 $ virtualenv venv
 $ source venv/bin/activate
-$ pip install -r requirements.txt
+$ pip3 install -r requirements.txt
 ```
