@@ -1,14 +1,12 @@
 import enum
 
-class State(enum):
+class State(enum.Enum):
     OFF = 0
     ON = 1
 
-class Mode(enum):
-    OFF = 0
-    ON_NOT_READY = 1
-    ON_READY = 2
+    def __str__(self):
+        return self.name
 
-class PowerUsage(enum):
+class PowerUsage(enum.Enum):
     LOW = 0
     REGULAR = 1

@@ -1,7 +1,7 @@
-ON_DEADBAND = (18, 20)  # low/high temps in celcius, obviously changing
-REGULAR_POWER_LOWER_LIMIT = 12
-LOW_POWER_LOWER_LIMIT = 10 # absolute lowest temp (in C) before EWH must turn itself back on
-TANK_SIZE = 90  # in litres
+DESIRED_TEMPERATURE = 55  # in celcius
+REGULAR_POWER_LOWER_LIMIT = 50
+LOW_POWER_LOWER_LIMIT = 45 # absolute lowest temp (in C) before EWH must turn itself back on
+TANK_SIZE = 270  # in litres
 INLET_TEMP = 10  # temperature of water (in C) at inlet
 AVERAGE_KWH = 1  # average power usage (in kilowatt hours)
 AMBIENT_TEMP = 20  # temperature (in C) of air outside of water heater
@@ -10,7 +10,7 @@ ACTION_POWER_CONSUMPTION = 1  # power usage when switching state
 
 class Configuration(object):
     def __init__(self,
-                deadband=ON_DEADBAND,
+                desired_temp=DESIRED_TEMPERATURE,
                 low_power_temp=LOW_POWER_LOWER_LIMIT,
                 regular_power_temp=REGULAR_POWER_LOWER_LIMIT,
                 tank_size=TANK_SIZE,
@@ -19,7 +19,7 @@ class Configuration(object):
                 inlet_temp=INLET_TEMP
                 initial_tank_temperature=INITIAL_TANK_TEMPERATURE,
                 action_power=ACTION_POWER_CONSUMPTION):
-        self.deadband = deadband
+        self._desired_temp = desired_temp
         self.low_power_temp = low_power_temp
         self._regular_power_temp = regular_power_temp,
         self.tank_size = tank_size
@@ -32,7 +32,7 @@ class Configuration(object):
     def as_dict():
         return {
             'low_power_mode_temperature_lower_limit': self.low_power_temp,
-            'deadband_temperature_range': "({0}->{1})".format(*self.deadband),
+            'desired_temperature': self.deadband,
             'regular_mode_temperature_lower_limit': self.regular_power_temperature_lower_limit,
             'tank_size': self.tank_size,
             'ambient_temperature': self.ambient_temp,
@@ -40,15 +40,16 @@ class Configuration(object):
             'power_consumption_per_time_interval': self.kwh,
             'state_change_power_consumption': self.state_change_power_usage,
             'initial_tank_temperature': self.initial_tank_temperature,
+            'temperature_factor': self.temperature_factor,
         }
 
     @property
-    def deadband(self):
-        return self.deadband
+    def desired_temp(self):
+        return self._desired_temp
 
-    @deadband.setter
-    def deadband(self, deadband):
-        self.deadband = deadband
+    @desired_temp.setter
+    def desired_temp(self, temp):
+        self._desired_temp = temp
 
     @property
     def low_power_temp(self):
@@ -97,3 +98,7 @@ class Configuration(object):
     @property
     def state_change_power_usage(self):
         return self._action_power
+
+    @property
+    def temperature_factor(self):
+        return None

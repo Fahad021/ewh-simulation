@@ -22,9 +22,10 @@ class ElectricWaterHeater(object):
         Get the current temperature of the water in the tank.
         This is a function of the ambient temperature of the air surrounding the
         tank, the inlet water temperature, previous temperature of the water,
-        the usage rate, the size of the tank, and the tank's insulation efficiency.
+        time elapsed, the usage rate, the size of the tank, and the tank's
+        insulation efficiency.
         """
-        return config.inlet_tem
+        return config.inlet_temp
 
     def power_usage_since_last_poll(self):
         return None
@@ -36,8 +37,8 @@ class ElectricWaterHeater(object):
     def info(self, include_config=False):
         d = {
             'total_power_usage': self.total_power_usage,
-            'current_temperature': self.temperature,
-            'state': 'ON' if self._on_state == State.ON else 'OFF',
+            'current_temperature': self.temperature(),
+            'state': str(self._on_state),
             'mode': 'LOW_POWER' if self._usage_state == PowerUsage.LOW else 'REGULAR',
         }
 
@@ -54,6 +55,16 @@ class ElectricWaterHeater(object):
 
         self._total_power_usage += self.configuration.state_change_power_usage
 
+    def turn_on(self):
+        if self._on_state != State.ON:
+            self._on_state = State.ON
+            self._total_power_usage += self.configuration.state_change_power_usage
+
+    def turn_off(self):
+        if self._on_state != State.OFF:
+            self._on_state = State.OFF
+            self._total_power_usage += self.configuration.state_change_power_usage
+
     def poll(self):
         current_temp = self.temperature()
         self._last_tank_temperature = current_temp
@@ -61,15 +72,15 @@ class ElectricWaterHeater(object):
         is_in_low_power_mode = self._usage_state == PowerUsage.LOW
         is_below_regular_threshold = current_temp < self.configuration.regular_power_lower_limit_temp
         is_below_lower_limit_threshold = current_temp < self.configuration.low_power_temp
-        is_in_deadband = current_temp in range(*self.configuration.deadband)
+        is_at_desired_temperature = current_temp >= self.configuration.desired_temp
 
         if is_in_low_power_mode and is_below_lower_limit_threshold:
-            self._on_state = State.ON
+            self.turn_on()
             self._usage_state = PowerUsage.REGULAR
         elif not is_in_low_power_mode and is_below_regular_threshold:
-            self._on_state = State.ON
-        elif is_in_deadband:
-            self._on_state = State.OFF
+            self.turn_on()
+        elif is_at_desired_temperature:
+            self.turn_off()
 
     def receive_command(self, force=False):
         is_in_low_power_mode = self._usage_state == PowerUsage.LOW
