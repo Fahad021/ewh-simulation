@@ -19,3 +19,13 @@ $ virtualenv venv
 $ source venv/bin/activate
 $ pip3 install -r requirements.txt
 ```
+
+## Running
+
+(coming soon)
+
+## Testing
+
+```bash
+$ python -m unittest tests
+```
