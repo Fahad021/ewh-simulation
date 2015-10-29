@@ -14,6 +14,7 @@ class ElectricWaterHeater(object):
 
         self._init_time = time.time()
         self._last_tank_temperature = self.configuration.initial_tank_temperature
+        self._last_poll_time = self._init_time
         self._last_power_usage = 0
         self._total_power_usage = 0
 
@@ -25,7 +26,14 @@ class ElectricWaterHeater(object):
         time elapsed, the usage rate, the size of the tank, and the tank's
         insulation efficiency.
         """
-        return config.inlet_temp
+        hours_since_last_poll = (time.time() - self._last_poll_time) / 3600
+        if self._on_state == State.ON:
+            result = self._last_tank_temperature + (5 * hours_since_last_poll)
+        else:
+            result = self._last_tank_temperature - hours_since_last_poll
+
+        self._last_tank_temperature = result
+        return result
 
     def power_usage_since_last_poll(self):
         return None
