@@ -8,6 +8,8 @@ AMBIENT_TEMP = 20  # temperature (in C) of air outside of water heater
 INITIAL_TANK_TEMPERATURE = 20
 ACTION_POWER_CONSUMPTION = 1  # power usage when switching state
 
+TIME_SCALING_FACTOR = 1
+
 class Configuration(object):
     def __init__(self,
                 desired_temp=DESIRED_TEMPERATURE,

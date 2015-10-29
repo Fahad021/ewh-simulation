@@ -3,6 +3,7 @@ from . import config
 
 import time
 
+
 class ElectricWaterHeater(object):
     def __init__(self, state=State.OFF, usage=PowerUsage.REGULAR, config=None):
         self._on_state = state
@@ -26,12 +27,14 @@ class ElectricWaterHeater(object):
         time elapsed, the usage rate, the size of the tank, and the tank's
         insulation efficiency.
         """
+        # right now - if on, add 5 deg per hour, if off subtract one per hour
         hours_since_last_poll = (time.time() - self._last_poll_time) / 3600
         if self._on_state == State.ON:
-            result = self._last_tank_temperature + (5 * hours_since_last_poll)
+            delta = 5 * hours_since_last_poll
         else:
-            result = self._last_tank_temperature - hours_since_last_poll
+            delta = hours_since_last_poll * (-1)
 
+        result = self._last_tank_temperature + (delta * config.TIME_SCALING_FACTOR)
         self._last_tank_temperature = result
         return result
 
