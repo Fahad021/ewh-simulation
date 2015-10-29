@@ -18,16 +18,16 @@ class Configuration(object):
                 tank_size=TANK_SIZE,
                 ambient_temp=AMBIENT_TEMP,
                 kwh=AVERAGE_KWH,
-                inlet_temp=INLET_TEMP
+                inlet_temp=INLET_TEMP,
                 initial_tank_temperature=INITIAL_TANK_TEMPERATURE,
                 action_power=ACTION_POWER_CONSUMPTION):
         self._desired_temp = desired_temp
-        self.low_power_temp = low_power_temp
-        self._regular_power_temp = regular_power_temp,
-        self.tank_size = tank_size
-        self.ambient_temp = ambient_temp
-        self.kwh = kwh
-        self.inlet_temp = inlet_temp
+        self._low_power_temp = low_power_temp
+        self._regular_power_temp = regular_power_temp
+        self._tank_size = tank_size
+        self._ambient_temp = ambient_temp
+        self._kwh = kwh
+        self._inlet_temp = inlet_temp
         self._initial_temperature = initial_tank_temperature
         self._action_power = action_power
 
@@ -55,11 +55,11 @@ class Configuration(object):
 
     @property
     def low_power_temp(self):
-        return low_power_temp
+        return self._low_power_temp
 
     @low_power_temp.setter
     def low_power_temp(self, temp):
-        self.low_power_temp = temp
+        self._low_power_temp = temp
 
     @property
     def regular_power_lower_limit_temp(self):
@@ -71,27 +71,27 @@ class Configuration(object):
 
     @property
     def tank_size(self):
-        return self.tank_size
+        return self._tank_size
 
     @property
     def ambient_temp(self):
-        return ambient_temp
+        return self._ambient_temp
 
     @ambient_temp.setter
     def ambient_temp(self, temp):
-        self.ambient_temp = temp
+        self._ambient_temp = temp
 
     @property
     def inlet_temp(self):
-        return self.inlet_temp
+        return self._inlet_temp
 
     @inlet_temp.setter
     def inlet_temp(self, temp):
-        self.inlet_temp = temp
+        self._inlet_temp = temp
 
     @property
     def kwh(self):
-        return self.kwh
+        return self._kwh
 
     @property
     def initial_tank_temperature(self):

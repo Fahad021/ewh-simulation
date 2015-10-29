@@ -1,17 +1,17 @@
-from .states import State, PowerUsage
-from . import config
+from states import State, PowerUsage
+import config
 
 import time
 
 
 class ElectricWaterHeater(object):
-    def __init__(self, state=State.OFF, usage=PowerUsage.REGULAR, config=None):
+    def __init__(self, state=State.OFF, usage=PowerUsage.REGULAR, configuration=None):
         self._on_state = state
         self._usage_state = usage
-        if config is None:
-            self.configuration = config.Configuration()  # use default
+        if configuration is None:
+            self._configuration = config.Configuration()  # use default
         else:
-            self.configuration = config
+            self._configuration = configuration
 
         self._init_time = time.time()
         self._last_tank_temperature = self.configuration.initial_tank_temperature
@@ -42,8 +42,20 @@ class ElectricWaterHeater(object):
         return None
 
     @property
+    def configuration(self):
+        return self._configuration
+
+    @configuration.setter
+    def configuration(self, config):
+        self._configuration = config
+
+    @property
     def total_power_usage(self):
         return self._total_power_usage
+
+    @property
+    def states(self):
+        return (self._on_state, self._usage_state)
 
     def info(self, include_config=False):
         d = {
