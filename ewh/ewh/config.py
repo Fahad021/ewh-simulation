@@ -31,19 +31,22 @@ class Configuration(object):
         self._initial_temperature = initial_tank_temperature
         self._action_power = action_power
 
-    def as_dict():
+    def as_dict(self):
         return {
             'low_power_mode_temperature_lower_limit': self.low_power_temp,
-            'desired_temperature': self.deadband,
-            'regular_mode_temperature_lower_limit': self.regular_power_temperature_lower_limit,
+            'desired_temperature': self.desired_temp,
+            'regular_mode_temperature_lower_limit': self.regular_power_lower_limit_temp,
             'tank_size': self.tank_size,
             'ambient_temperature': self.ambient_temp,
-            'inlet_temperature': self.inlet_temperature,
+            'inlet_temperature': self.inlet_temp,
             'power_consumption_per_time_interval': self.kwh,
             'state_change_power_consumption': self.state_change_power_usage,
             'initial_tank_temperature': self.initial_tank_temperature,
             'temperature_factor': self.temperature_factor,
         }
+
+    def __eq__(self, given_configuration):
+        return self.as_dict() == given_configuration.as_dict()
 
     @property
     def desired_temp(self):
