@@ -1,8 +1,9 @@
 import enum
 
-class State(enum.Enum):
+class OnState(enum.Enum):
     OFF = 0
-    ON = 1
+    TOP = 1
+    BOTTOM = 2
 
     def __str__(self):
         return self.name
@@ -10,3 +11,6 @@ class State(enum.Enum):
 class PowerUsage(enum.Enum):
     LOW = 0
     REGULAR = 1
+
+    def __str__(self):
+        return self.name
