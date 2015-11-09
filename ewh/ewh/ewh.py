@@ -5,7 +5,7 @@ import time
 
 
 class ElectricWaterHeater(object):
-    def __init__(self, state=State.OFF, configuration=None):
+    def __init__(self, state=OnState.OFF, configuration=None):
         self._on_state = state
         if configuration is None:
             self._config = config.HeaterConfiguration()  # use default

@@ -16,7 +16,7 @@ class Controller(object):
         else:
             self._config = config
 
-        self._on_state = State.OFF
+        self._on_state = OnState.OFF
         self._usage_state = PowerUsage.REGULAR
         self._on_state_changes = 0
         self._usage_state_changes = 0
