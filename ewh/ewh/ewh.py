@@ -16,8 +16,7 @@ class ElectricWaterHeater(object):
         self._last_poll_time = self._init_time
         self._total_time_on = 0
         self._time_on_since_last_poll = 0
-        self._top_temperature = self.configuration.initial_tank_temperature
-        self._bottom_temperature = self.configuration.initial_tank_temperature
+        self._temperature = self.configuration.initial_tank_temperature
         self._lower_limit = self.configuration.regular_power_temp
 
     def update_temperatures(self):
@@ -28,8 +27,6 @@ class ElectricWaterHeater(object):
         time elapsed, the usage rate, the size of the tank, and the tank's
         insulation efficiency.
         """
-        # right now - if on, add 5 deg per hour, if off subtract one per hour
-        # TODO: this completely changed with the top/bottom configuration
         pass
 
     @property
@@ -50,20 +47,16 @@ class ElectricWaterHeater(object):
     def got_to_regular_power_mode(self):
         self._lower_limit = self.configuration.regular_power_temp
 
-    def bottom_needs_power(self):
-        return self._bottom_temperature < self._lower_limit
-
-    def top_needs_power(self):
-        return self._top_temperature < self.configuration.regular_power_temp
+    def needs_power(self):
+        return self._temperature < self._lower_limit
 
     def switch_power(self, state):
         self._on_state = state
 
     def info(self, include_config=False):
         d = {
-            'current_top_temperature': self._top_temperature,
-            'current_bottom_temperature': self._bottom_temperature,
-            'current_bottom_tank_lower_limit': self._lower_limit,
+            'current_temperature': self._temperature,
+            'current_lower_limit': self._lower_limit,
             'total_time_on': self._total_time_on
             'state': str(self._on_state),
         }

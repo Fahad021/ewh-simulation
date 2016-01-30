@@ -1,7 +1,9 @@
 DESIRED_TEMPERATURE = 55  # in celcius
 REGULAR_POWER_LOWER_LIMIT = 50
 LOW_POWER_LOWER_LIMIT = 45 # absolute lowest temp (in C) before EWH must turn itself back on
-TANK_SIZE = 270  # in litres
+TANK_SURFACE_AREA = 0  # in square meters
+TANK_RADIUS = 0  # in meters
+TANK_HEIGHT = 0  # in meters
 INLET_TEMP = 10  # temperature of water (in C) at inlet
 AVERAGE_KWH = 1  # average power usage (in kilowatt hours)
 AMBIENT_TEMP = 20  # temperature (in C) of air outside of water heater
@@ -44,14 +46,18 @@ class HeaterConfiguration(Configuration):
                 desired_temp=DESIRED_TEMPERATURE,
                 low_power_temp=LOW_POWER_LOWER_LIMIT,
                 regular_power_temp=REGULAR_POWER_LOWER_LIMIT,
-                tank_size=TANK_SIZE,
+                tank_surface_area=TANK_SURFACE_AREA,
+                tank_radius=TANK_RADIUS,
+                tank_height=TANK_HEIGHT,
                 ambient_temp=AMBIENT_TEMP,
                 inlet_temp=INLET_TEMP,
                 initial_tank_temperature=INITIAL_TANK_TEMPERATURE):
         self._desired_temp = desired_temp
         self._low_power_temp = low_power_temp
         self._regular_power_temp = regular_power_temp
-        self._tank_size = tank_size
+        self._tank_surface_area = tank_surface_area
+        self._tank_radius = tank_radius
+        self._tank_height = tank_height
         self._ambient_temp = ambient_temp
         self._inlet_temp = inlet_temp
         self._initial_temperature = initial_tank_temperature
@@ -61,6 +67,9 @@ class HeaterConfiguration(Configuration):
             'low_power_mode_temperature_lower_limit': self.low_power_temp,
             'desired_temperature': self.desired_temp,
             'regular_mode_temperature_lower_limit': self.regular_power_temp,
+            'tank_surface_area': self.tank_surface_area,
+            'tank_radius': self.tank_radius,
+            'tank_height': self.tank_height,
             'tank_size': self.tank_size,
             'ambient_temperature': self.ambient_temp,
             'inlet_temperature': self.inlet_temp,
@@ -84,8 +93,24 @@ class HeaterConfiguration(Configuration):
         return self._regular_power_temp
 
     @property
+    def tank_surface_area(self):
+        """Surface area of the outside of the water tank, in square meters"""
+        return self._tank_surface_area
+
+    @property
+    def tank_radius(self):
+        """Radius of the water tank, in meters"""
+        return self._tank_radius
+
+    @property
+    def tank_height(self):
+        """Height of the water tank, in meters"""
+        return self._tank_height
+
+    @property
     def tank_size(self):
-        return self._tank_size
+        """Total size of the water tank, in liters"""
+        return self.tank_radius * self.tank_height
 
     @property
     def ambient_temp(self):
