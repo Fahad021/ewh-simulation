@@ -12,6 +12,9 @@ ACTION_POWER_CONSUMPTION = 1  # power usage when switching state
 INSULATION_THERMAL_RESISTANCE = 1
 
 TIME_SCALING_FACTOR = 1
+SPECIFIC_HEAT_OF_WATER = 1
+HEATING_ELEMENT_RATING_270_LITER = 4.2  # kW
+HEATING_ELEMENT_RATING_180_LITER = 2.8  # kW
 
 
 class Configuration(object):
@@ -52,7 +55,8 @@ class HeaterConfiguration(Configuration):
                 tank_height=TANK_HEIGHT,
                 ambient_temp=AMBIENT_TEMP,
                 inlet_temp=INLET_TEMP,
-                initial_tank_temperature=INITIAL_TANK_TEMPERATURE):
+                initial_tank_temperature=INITIAL_TANK_TEMPERATURE
+                heating_element_rating=HEATING_ELEMENT_RATING_270_LITER):
         self._desired_temp = desired_temp
         self._low_power_temp = low_power_temp
         self._regular_power_temp = regular_power_temp
@@ -62,6 +66,7 @@ class HeaterConfiguration(Configuration):
         self._ambient_temp = ambient_temp
         self._inlet_temp = inlet_temp
         self._initial_temperature = initial_tank_temperature
+        self._heating_element_rating = heating_element_rating
 
     def info(self):
         return {
@@ -137,3 +142,8 @@ class HeaterConfiguration(Configuration):
     @property
     def insulation_thermal_resistance(self):
         return INSULATION_THERMAL_RESISTANCE
+
+    @property
+    def power_input(self):
+        """Power input to the tank in btu/hour"""
+        return 3412.1 * self._heating_element_rating
