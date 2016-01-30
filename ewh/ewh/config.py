@@ -9,6 +9,7 @@ AVERAGE_KWH = 1  # average power usage (in kilowatt hours)
 AMBIENT_TEMP = 20  # temperature (in C) of air outside of water heater
 INITIAL_TANK_TEMPERATURE = 20
 ACTION_POWER_CONSUMPTION = 1  # power usage when switching state
+INSULATION_THERMAL_RESISTANCE = 1
 
 TIME_SCALING_FACTOR = 1
 
@@ -74,6 +75,7 @@ class HeaterConfiguration(Configuration):
             'ambient_temperature': self.ambient_temp,
             'inlet_temperature': self.inlet_temp,
             'initial_tank_temperature': self.initial_tank_temperature,
+            'insulation_thermal_resistance': self.insulation_thermal_resistance,
         }
 
     @property
@@ -131,3 +133,7 @@ class HeaterConfiguration(Configuration):
     @property
     def initial_tank_temperature(self):
         return self._initial_temperature
+
+    @property
+    def insulation_thermal_resistance(self):
+        return INSULATION_THERMAL_RESISTANCE
