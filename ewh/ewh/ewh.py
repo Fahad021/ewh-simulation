@@ -26,16 +26,6 @@ class ElectricWaterHeater(object):
         self._temperature = self.configuration.initial_tank_temperature
         self._lower_limit = self.configuration.regular_power_temp
 
-    def update_temperatures(self):
-        """
-        Get the current temperature of the water in the tank.
-        This is a function of the ambient temperature of the air surrounding the
-        tank, the inlet water temperature, previous temperature of the water,
-        time elapsed, the usage rate, the size of the tank, and the tank's
-        insulation efficiency.
-        """
-        pass
-
     @property
     def configuration(self):
         return self._config
@@ -87,7 +77,7 @@ class ElectricWaterHeater(object):
         g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
         b = demand * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         r_prime = 1.0 / (g + b)
-        scalar = math.exp(-hours_since_last/r_prime)
+        scalar = math.exp(-hours_since_last_poll/r_prime)
 
         inside = g * self.environment.ambient_temperature + b * self.environment.inlet_temperature + self.configuration.power_input
         inside *= r_prime
