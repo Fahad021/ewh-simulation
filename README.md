@@ -13,7 +13,7 @@ $ pip3 install -r requirements.txt
 ### Mac with Virtualenv
 
 ```bash
-$ brew3 install python
+$ brew install python3
 $ pip3 install virtualenv
 $ virtualenv venv
 $ source venv/bin/activate
