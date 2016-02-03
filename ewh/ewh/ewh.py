@@ -1,17 +1,23 @@
 from states import OnState
 import config
+import simulation
 
 import time
 import math
 
 
 class ElectricWaterHeater(object):
-    def __init__(self, state=OnState.OFF, configuration=None):
+    def __init__(self, state=OnState.OFF, configuration=None, environment=None):
         self._on_state = state
         if configuration is None:
             self._config = config.HeaterConfiguration()  # use default
         else:
             self._config = configuration
+
+        if environment is None:
+            self._environment = simulation.environment()
+        else:
+            self._environment = environment
 
         self._init_time = time.time()
         self._last_poll_time = self._init_time
@@ -39,6 +45,10 @@ class ElectricWaterHeater(object):
         self._config = c
 
     @property
+    def environment(self):
+        return self._environment
+
+    @property
     def total_time_on(self):
         return self._total_time_on
 
@@ -61,7 +71,7 @@ class ElectricWaterHeater(object):
         """
         sa = self.configuration.tank_surface_area
         resist = 1.0 / self.configuration.insulation_thermal_resistance
-        diff = current_temperature - self.configuration.ambient_temp
+        diff = current_temperature - self.environment.ambient_temp
         return sa * resist * diff
 
     def demand_losses(self, current_temperature, current_demand):
@@ -70,7 +80,7 @@ class ElectricWaterHeater(object):
         imperial btu/hour
         """
         scalar = 8.3 * config.SPECIFIC_HEAT_OF_WATER
-        diff = current_temperature - self.configuration.inlet_temp
+        diff = current_temperature - self.environment.inlet_temp
         return scalar * current_demand * diff
 
     def new_temperature(self, last_temperature, demand, hours_since_last_poll):
@@ -79,12 +89,12 @@ class ElectricWaterHeater(object):
         r_prime = 1.0 / (g + b)
         scalar = math.exp(-hours_since_last/r_prime)
 
-        inside = g * self.configuration.ambient_temp + b * self.configuration.inlet_temp + self.configuration.power_input
+        inside = g * self.environment.ambient_temp + b * self.environment.inlet_temp + self.configuration.power_input
         inside *= r_prime
 
         return last_temperature * scalar + inside * (1 - scalar)
 
-    def info(self, include_config=False):
+    def info(self, include_config=False, include_environment=False):
         d = {
             'current_temperature': self._temperature,
             'current_lower_limit': self._lower_limit,
@@ -94,5 +104,8 @@ class ElectricWaterHeater(object):
 
         if include_config:
             d['configuration'] = self.configuration.info()
+
+        if include_environment:
+            d['environment'] = self.environment.info()
 
         return d

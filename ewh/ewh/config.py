@@ -43,7 +43,6 @@ class ControllerConfiguration(Configuration):
     def state_change_power_consumption(self):
         return self._action_power
 
-
 class HeaterConfiguration(Configuration):
     # TODO: consistent naming (temp vs temperature)
     def __init__(self,
@@ -53,8 +52,6 @@ class HeaterConfiguration(Configuration):
                 tank_surface_area=TANK_SURFACE_AREA,
                 tank_radius=TANK_RADIUS,
                 tank_height=TANK_HEIGHT,
-                ambient_temp=AMBIENT_TEMP,
-                inlet_temp=INLET_TEMP,
                 initial_tank_temperature=INITIAL_TANK_TEMPERATURE
                 heating_element_rating=HEATING_ELEMENT_RATING_270_LITER):
         self._desired_temp = desired_temp
@@ -63,8 +60,6 @@ class HeaterConfiguration(Configuration):
         self._tank_surface_area = tank_surface_area
         self._tank_radius = tank_radius
         self._tank_height = tank_height
-        self._ambient_temp = ambient_temp
-        self._inlet_temp = inlet_temp
         self._initial_temperature = initial_tank_temperature
         self._heating_element_rating = heating_element_rating
 
@@ -77,8 +72,6 @@ class HeaterConfiguration(Configuration):
             'tank_radius': self.tank_radius,
             'tank_height': self.tank_height,
             'tank_size': self.tank_size,
-            'ambient_temperature': self.ambient_temp,
-            'inlet_temperature': self.inlet_temp,
             'initial_tank_temperature': self.initial_tank_temperature,
             'insulation_thermal_resistance': self.insulation_thermal_resistance,
         }
@@ -118,22 +111,6 @@ class HeaterConfiguration(Configuration):
     def tank_size(self):
         """Total size of the water tank, in liters"""
         return self.tank_radius * self.tank_height
-
-    @property
-    def ambient_temp(self):
-        return self._ambient_temp
-
-    @ambient_temp.setter
-    def ambient_temp(self, temp):
-        self._ambient_temp = temp
-
-    @property
-    def inlet_temp(self):
-        return self._inlet_temp
-
-    @inlet_temp.setter
-    def inlet_temp(self, temp):
-        self._inlet_temp = temp
 
     @property
     def initial_tank_temperature(self):
