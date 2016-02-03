@@ -71,7 +71,7 @@ class ElectricWaterHeater(object):
         """
         sa = self.configuration.tank_surface_area
         resist = 1.0 / self.configuration.insulation_thermal_resistance
-        diff = current_temperature - self.environment.ambient_temp
+        diff = current_temperature - self.environment.ambient_temperature
         return sa * resist * diff
 
     def demand_losses(self, current_temperature, current_demand):
@@ -80,7 +80,7 @@ class ElectricWaterHeater(object):
         imperial btu/hour
         """
         scalar = 8.3 * config.SPECIFIC_HEAT_OF_WATER
-        diff = current_temperature - self.environment.inlet_temp
+        diff = current_temperature - self.environment.inlet_temperature
         return scalar * current_demand * diff
 
     def new_temperature(self, last_temperature, demand, hours_since_last_poll):
@@ -89,7 +89,7 @@ class ElectricWaterHeater(object):
         r_prime = 1.0 / (g + b)
         scalar = math.exp(-hours_since_last/r_prime)
 
-        inside = g * self.environment.ambient_temp + b * self.environment.inlet_temp + self.configuration.power_input
+        inside = g * self.environment.ambient_temperature + b * self.environment.inlet_temperature + self.configuration.power_input
         inside *= r_prime
 
         return last_temperature * scalar + inside * (1 - scalar)
