@@ -30,6 +30,13 @@ $ source venv/bin/activate
 $ pip3 install -r requirements.txt
 ```
 
+### PyCharm setup
+
+* Install and open PyCharm
+* Open the `ewh-simulation` folder as a new project
+* Pycharm -> Preferences -> "Project: ewh-simulation"
+* Select the "3.4.3 virtualenv" interpreter and press OK
+
 ## Running
 
 (coming soon)
