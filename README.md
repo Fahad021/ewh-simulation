@@ -1,20 +1,26 @@
 # ewh-simulation
 Simulation of a network of electric water heaters
 
-## Setup
+## Mac Setup
 
-### Mac without Virtualenv
+### Github setup
 
-```bash
-$ brew install python3
-$ git clone git@github.com:ryanordille/ewh-simulation.git
-$ cd ewh-simulation
-$ pip3 install -r requirements.txt
+In the terminal:
+
+```
+$ ssh-keygen
+[just keep pressing enter until you can type in a new command]
+$ cat ~/.ssh/id_rsa.pub | pbcopy
 ```
 
-### Mac with Virtualenv
+This will copy your public key to your clipboard automatically.
+
+On Github, click on your avatar (top-right corner), then Settings -> SSH Keys -> New SSH Key. Paste into the "Key" field (don't bother with a title) and click "Add SSH Key".
+
+### Project setup
 
 ```bash
+$ cd /path/to/wherever/you/keep/github/stuff/
 $ brew install python3
 $ pip3 install virtualenv
 $ git clone git@github.com:ryanordille/ewh-simulation.git
