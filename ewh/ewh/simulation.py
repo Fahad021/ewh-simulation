@@ -35,3 +35,26 @@ def environment():
         _environment_singleton = Environment(initial_ambient_temperature=AMBIENT_TEMP,
             initial_inlet_temperature=INLET_TEMP)
     return _environment_singleton
+
+
+class Simulation(object):
+    def __init__(self):
+        self._environment = environment()
+        self._hub =
+        self._population = []
+
+    def add_controllers_to_population(self, population):
+        self._population.extend(population)
+
+    def run(self, time_steps=None, subset_size=None):
+        pass
+
+    def run_time_step(self, population_subset):
+        pass
+
+    def poll_controller_bidirectional(self, controller):
+        controller.poll()
+
+        message = controller.info(include_ewh=True)
+
+        # TODO: ... coming soon to a theatre near you
