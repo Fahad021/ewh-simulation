@@ -2,8 +2,6 @@ from ewh import ElectricWaterHeater
 from states import OnState, PowerUsage
 from config import ControllerConfiguration
 
-import time
-
 class Controller(object):
     def __init__(self, ewh=None, config=None):
         if ewh is None:
@@ -30,6 +28,7 @@ class Controller(object):
         self._ewh.update()
         # TODO: check power usage mode with new single-tank model
 
+
     def receive_command(self):
         if self._usage_state == PowerUsage.REGULAR:
             self._usage_state = PowerUsage.LOW
@@ -41,9 +40,6 @@ class Controller(object):
         return (self._usage_state_changes +
             self._commands_received +
             self._ewh.total_time_on) * self.configuration.power_consumption
-
-    def power_consumption_since_last_poll(self):
-        pass
 
     def info(self, include_config=False, include_ewh=False):
         d = {

@@ -1,43 +1,118 @@
 from unittest import TestCase
 
-from ewh import ElectricWaterHeater
-from states import State, PowerUsage
+import ewh
 import config
+import states
+import simulation
 
 class EWHTests(TestCase):
-    def assertOnRegular(self, ewh):
-        self.assertEqual(ewh.states, (State.ON, PowerUsage.REGULAR))
+    """This test class tests the behaviour of a single EWH unit with
+    default configuration."""
 
-    def assertOffRegular(self, ewh):
-        self.assertEqual(ewh.states, (State.OFF, PowerUsage.REGULAR))
+    def setUp(self):
+        self.heater = ewh.ElectricWaterHeater()
 
-    def test_create_ewh_in_off_regular_state(self):
-        ewh = ElectricWaterHeater()
-        self.assertEqual(ewh.states, (State.OFF, PowerUsage.REGULAR))
+    def assertOn(self):
+        self.assertEqual(self.heater._on_state, states.OnState.ON)
+
+    def assertOff(self):
+        self.assertEqual(self.heater._on_state, states.OnState.OFF)
+
+    def test_given_configuration(self):
+        """Check if user gives a configuration, the default one is not used."""
+        given = config.HeaterConfiguration(desired_temp=1000)
+        heater = ewh.ElectricWaterHeater(configuration=given)
+        self.assertEqual(heater.configuration, given)
+        self.assertNotEqual(heater.configuration, config.HeaterConfiguration())
+        # TODO: below may not be relevant if __eq__ is not redefined
+        self.assertNotEqual(heater, ewh.ElectricWaterHeater())
 
     def test_default_configuration(self):
-        self.assertEqual(ElectricWaterHeater().configuration, config.Configuration())
+        """Check if the user does not give a configuration, use the default one."""
+        self.assertEqual(self.heater.configuration, config.HeaterConfiguration())
 
-    def test_turn_on_and_off(self):
-        ewh = ElectricWaterHeater()
-        original_power = ewh.total_power_usage
+    def test_given_environment(self):
+        """Check if the user gives a separate environment that we don't use the simulation-wide one."""
+        enviro = simulation.Environment(initial_ambient_temperature=10000, initial_inlet_temperature=10000)
+        self.assertNotEqual(enviro, simulation.environment())
+        heater = ewh.ElectricWaterHeater(environment=enviro)
+        self.assertEqual(heater.environment, enviro)
+        self.assertNotEqual(heater.environment, simulation.environment())
 
-        # first try turning off when already off - no change in power
-        ewh.turn_off()
-        self.assertOffRegular(ewh)
-        self.assertEqual(original_power, ewh.total_power_usage)
+    def test_default_environment(self):
+        """Check if the user does not give an environment, we use the simulation-wide one."""
+        self.assertEqual(self.heater.environment, simulation.environment())
 
-        # now turn on - one state change
-        ewh.turn_on()
-        self.assertOnRegular(ewh)
-        self.assertEqual(ewh.total_power_usage, config.ACTION_POWER_CONSUMPTION)
+    def test_default_values(self):
+        """Make sure the default values are as expected."""
+        self.assertOff(self.ewh)
+        self.assertEqual(self.ewh.total_time_on, 0)
 
-        # turn on again, no power usage
-        ewh.turn_on()
-        self.assertOnRegular(ewh)
-        self.assertEqual(ewh.total_power_usage, config.ACTION_POWER_CONSUMPTION)
+    def test_temperature_deadband(self):
+        self.fail("write this test")
 
-        # turn off - another state change
-        ewh.turn_off()
-        self.assertOffRegular(ewh)
-        self.assertEqual(ewh.total_power_usage, 2*config.ACTION_POWER_CONSUMPTION)
+    def test_update_updates_time_steps_on(self):
+        """Check that if the heater is on and an update() is called, the total time on is updated.
+        Likewise, check that if it is not on that the value is the same."""
+        self.fail("write this test")
+
+    def test_update_changes_power_state_when_necessary(self):
+        """Check that if the OnState of the heater needs to be changed (i.e. it is
+        outside of the acceptable temperature deadband), running an update() will
+        change the state accordingly. Try this with low power and regular power modes."""
+        self.fail("write this test")
+
+    def test_update_does_not_change_power_state_in_deadband(self):
+        """Check that if the OnState of the heater is within the acceptable temperature
+        deadband, then the heating element is not toggled. Try this with the low power
+        and regular power modes."""
+        self.fail("write this test")
+
+
+class EnvironmentTests(TestCase):
+    def test_update_inlet(self):
+        env = simulation.Environment()
+        old_ambient = env.ambient_temperature
+        new_inlet = env.inlet_temperature + 1
+        env.update_environment(new_inlet=new_inlet)
+        self.assertEqual(env.inlet_temperature, new_inlet)
+        self.assertEqual(env.ambient_temperature, old_ambient)
+
+    def test_update_ambient(self):
+        env = simulation.Environment()
+        old_inlet = env.inlet_temperature
+        new_ambient = env.ambient_temperature + 1
+        env.update_environment(new_ambient=new_ambient)
+        self.assertEqual(env.inlet_temperature, old_inlet)
+        self.assertEqual(env.ambient_temperature, new_ambient)
+
+    def test_update_both(self):
+        env = simulation.Environment()
+        new_ambient = env.ambient_temperature - 1
+        new_inlet = env.inlet_temperature + 1
+        env.update_environment(new_inlet=new_inlet, new_ambient=new_ambient)
+        self.assertEqual(env.inlet_temperature, new_inlet)
+        self.assertEqual(env.ambient_temperature, new_ambient)
+
+    def test_update_none(self):
+        env = simulation.Environment()
+        old_ambient = env.ambient_temperature
+        old_inlet = env.inlet_temperature
+        env.update_environment()  # do nothing
+        self.assertEqual(env.inlet_temperature, old_inlet)
+        self.assertEqual(env.ambient_temperature, old_ambient)
+
+    def test_environment_singleton(self):
+        default_env = simulation.Environment()
+        singleton = simluation.environment()
+        self.assertEqual(singleton, default_env)
+        singleton.update_environment(new_inlet=1)
+        self.assertNotEqual(singleton, default_env)
+        again = simulation.environment()
+        self.assertEqual(singleton, again)
+        again.update_environment(new_inlet=2)
+        self.assertEqual(singleton, again)
+        self.assertNotEqual(singleton, default_env)
+
+class ControllerTests(TestCase):
+    pass

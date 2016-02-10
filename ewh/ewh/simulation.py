@@ -29,6 +29,9 @@ class Environment(object):
             'inlet_temperature': self._inlet_temperature,
         }
 
+    def __eq__(self, other_environment):
+        return self.info() == other_environment.info()
+
 _environment_singleton = None
 def environment():
     if _environment_singleton is None:
