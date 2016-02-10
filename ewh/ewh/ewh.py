@@ -19,10 +19,7 @@ class ElectricWaterHeater(object):
         else:
             self._environment = environment
 
-        self._init_time = time.time()
-        self._last_poll_time = self._init_time
         self._total_time_on = 0
-        self._time_on_since_last_poll = 0
         self._temperature = self.configuration.initial_tank_temperature
         self._lower_limit = self.configuration.regular_power_temp
 
@@ -48,8 +45,11 @@ class ElectricWaterHeater(object):
     def got_to_regular_power_mode(self):
         self._lower_limit = self.configuration.regular_power_temp
 
-    def needs_power(self):
-        return self._temperature < self._lower_limit
+    def heater_needs_to_turn_off(self):
+        return (self._on_state == OnState.ON) and (self._temperature >= self.configuration.desired_temp)
+
+    def heater_needs_to_turn_on(self):
+        return (self._on_state == OnState.OFF) and (self._temperature < self._lower_limit)
 
     def switch_power(self, state):
         self._on_state = state
@@ -84,18 +84,37 @@ class ElectricWaterHeater(object):
 
         return last_temperature * scalar + inside * (1 - scalar)
 
-    def info(self, include_config=False, include_environment=False):
+    def update(self):
+        last_temperature = self._temperature
+        demand = 0  # TODO: tie this in from graphs
+        hours_since_last_poll = config.TIME_SCALING_FACTOR  # TODO: may be inverse
+
+        self._temperature = self.new_temperature(last_temperature, demand, hours_since_last_poll)
+
+        if self.heater_is_on():
+            self._total_time_on += 1
+
+        # turn on/off heater if temperature out of desired range
+        if self.heater_needs_to_turn_off():
+            self.switch_power(OnState.OFF)
+        elif self.heater_needs_to_turn_on():
+            self.switch_power(OnState.ON)
+
+    def info(self, include_config=False):
         d = {
             'current_temperature': self._temperature,
             'current_lower_limit': self._lower_limit,
             'total_time_on': self._total_time_on
-            'state': str(self._on_state),
+            'current_state': str(self._on_state),
         }
 
         if include_config:
             d['configuration'] = self.configuration.info()
 
-        if include_environment:
-            d['environment'] = self.environment.info()
-
         return d
+
+def make_small_ewh():
+    pass
+
+def make_large_ewh():
+    pass
