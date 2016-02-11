@@ -29,3 +29,17 @@ beta = b[alpha]
 
 print(beta)
 
+
+with open('../Data/IncomingWaterUse.csv') as csvfile:
+    reader = csv.DictReader(csvfile)
+    print(reader)
+     c = []
+    for row in reader:
+        value = row['Fahrenheit']
+        c.append(value)
+
+proton = math.ceil((1320 * 1)/24)
+electron = b[proton]
+
+print(beta)
+
