@@ -23,16 +23,6 @@ class ElectricWaterHeater(object):
         self._temperature = self.configuration.initial_tank_temperature
         self._lower_limit = self.configuration.regular_power_temp
 
-    def update_temperatures(self):
-        """
-        Get the current temperature of the water in the tank.
-        This is a function of the ambient temperature of the air surrounding the
-        tank, the inlet water temperature, previous temperature of the water,
-        time elapsed, the usage rate, the size of the tank, and the tank's
-        insulation efficiency.
-        """
-        pass
-
     @property
     def configuration(self):
         return self._config
@@ -61,6 +51,9 @@ class ElectricWaterHeater(object):
     def heater_needs_to_turn_on(self):
         return (self._on_state == OnState.OFF) and (self._temperature < self._lower_limit)
 
+    def needs_regular_power_mode(self):
+        return self._temperature < self._lower_limit
+
     def switch_power(self, state):
         self._on_state = state
 
@@ -83,11 +76,11 @@ class ElectricWaterHeater(object):
         diff = current_temperature - self.environment.inlet_temperature
         return scalar * current_demand * diff
 
-    def new_temperature(self, last_temperature, demand, hours_since_last_poll):
+    def new_temperature(self, last_temperature, demand):
         g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
         b = demand * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         r_prime = 1.0 / (g + b)
-        scalar = math.exp(-hours_since_last_poll/r_prime)
+        scalar = math.exp(-config.TIME_SCALING_FACTOR/r_prime)
 
         inside = g * self.environment.ambient_temperature + b * self.environment.inlet_temperature + self.configuration.power_input
         inside *= r_prime
@@ -97,9 +90,8 @@ class ElectricWaterHeater(object):
     def update(self):
         last_temperature = self._temperature
         demand = 0  # TODO: tie this in from graphs
-        hours_since_last_poll = config.TIME_SCALING_FACTOR  # TODO: may be inverse
 
-        self._temperature = self.new_temperature(last_temperature, demand, hours_since_last_poll)
+        self._temperature = self.new_temperature(last_temperature, demand)
 
         if self.heater_is_on():
             self._total_time_on += 1
@@ -114,7 +106,7 @@ class ElectricWaterHeater(object):
         d = {
             'current_temperature': self._temperature,
             'current_lower_limit': self._lower_limit,
-            'total_time_on': self._total_time_on
+            'total_time_on': self._total_time_on,
             'current_state': str(self._on_state),
         }
 

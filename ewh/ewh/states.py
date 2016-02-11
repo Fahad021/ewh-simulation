@@ -2,8 +2,7 @@ import enum
 
 class OnState(enum.Enum):
     OFF = 0
-    TOP = 1
-    BOTTOM = 2
+    ON = 1
 
     def __str__(self):
         return self.name

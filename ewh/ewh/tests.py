@@ -104,7 +104,7 @@ class EnvironmentTests(TestCase):
 
     def test_environment_singleton(self):
         default_env = simulation.Environment()
-        singleton = simluation.environment()
+        singleton = simulation.environment()
         self.assertEqual(singleton, default_env)
         singleton.update_environment(new_inlet=1)
         self.assertNotEqual(singleton, default_env)
