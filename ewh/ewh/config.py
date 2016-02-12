@@ -43,9 +43,9 @@ class HeaterConfiguration(Configuration):
                 low_power_temperature=LOW_POWER_LOWER_LIMIT,
                 regular_power_temperature=REGULAR_POWER_LOWER_LIMIT,
                 tank_size=TankSize.SMALL):
-        self._desired_temp = desired_temperature
-        self._low_power_temp = low_power_temperature
-        self._regular_power_temp = regular_power_temperature
+        self._desired_temperature = desired_temperature
+        self._low_power_temperature = low_power_temperature
+        self._regular_power_temperature= regular_power_temperature
 
         if tank_size == TankSize.LARGE:
             # 180 liter tank
@@ -73,19 +73,19 @@ class HeaterConfiguration(Configuration):
 
     @property
     def desired_temp(self):
-        return self._desired_temp
+        return self._desired_temperature
 
     @desired_temp.setter
     def desired_temp(self, temp):
-        self._desired_temp = temp
+        self._desired_temperature= temp
 
     @property
     def low_power_temp(self):
-        return self._low_power_temp
+        return self._low_power_temperature
 
     @property
     def regular_power_temp(self):
-        return self._regular_power_temp
+        return self._regular_power_temperature
 
     @property
     def tank_surface_area(self):

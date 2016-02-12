@@ -21,7 +21,7 @@ class ElectricWaterHeater(object):
 
         self._total_time_on = 0
         self._temperature = self._environment.ambient_temperature
-        self._lower_limit = self.configuration.regular_power_temp
+        self._lower_limit = self.configuration.regular_power_temperature
 
     @property
     def configuration(self):
@@ -40,10 +40,10 @@ class ElectricWaterHeater(object):
         return self._total_time_on
 
     def go_to_low_power_mode(self):
-        self._lower_limit = self.configuration.low_power_temp
+        self._lower_limit = self.configuration.low_power_temperature
 
     def got_to_regular_power_mode(self):
-        self._lower_limit = self.configuration.regular_power_temp
+        self._lower_limit = self.configuration.regular_power_temperature
 
     def heater_needs_to_turn_off(self):
         return (self._on_state == OnState.ON) and (self._temperature >= self.configuration.desired_temp)
@@ -52,7 +52,7 @@ class ElectricWaterHeater(object):
         return (self._on_state == OnState.OFF) and (self._temperature < self._lower_limit)
 
     def needs_regular_power_mode(self):
-        return self._temperature < self._lower_limit
+        return self._temperature < self.configuration.low_power_temperature
 
     def switch_power(self, state):
         self._on_state = state
