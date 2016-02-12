@@ -1,6 +1,6 @@
 from states import OnState, TankSize
 import config
-import simulation
+import environment
 
 import time
 import math
@@ -15,7 +15,7 @@ class ElectricWaterHeater(object):
             self._config = configuration
 
         if environment is None:
-            self._environment = simulation.environment()
+            self._environment = environment.environment()
         else:
             self._environment = environment
 

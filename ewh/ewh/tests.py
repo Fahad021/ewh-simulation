@@ -3,7 +3,7 @@ from unittest import TestCase
 import ewh
 import config
 import states
-import simulation
+import environment
 
 class EWHTests(TestCase):
     """This test class tests the behaviour of a single EWH unit with
@@ -33,15 +33,15 @@ class EWHTests(TestCase):
 
     def test_given_environment(self):
         """Check if the user gives a separate environment that we don't use the simulation-wide one."""
-        enviro = simulation.Environment(initial_ambient_temperature=10000, initial_inlet_temperature=10000)
-        self.assertNotEqual(enviro, simulation.environment())
+        enviro = environment.Environment(initial_ambient_temperature=10000, initial_inlet_temperature=10000)
+        self.assertNotEqual(enviro, environment.environment())
         heater = ewh.ElectricWaterHeater(environment=enviro)
         self.assertEqual(heater.environment, enviro)
-        self.assertNotEqual(heater.environment, simulation.environment())
+        self.assertNotEqual(heater.environment, environment.environment())
 
     def test_default_environment(self):
         """Check if the user does not give an environment, we use the simulation-wide one."""
-        self.assertEqual(self.heater.environment, simulation.environment())
+        self.assertEqual(self.heater.environment, environment.environment())
 
     def test_default_values(self):
         """Make sure the default values are as expected."""
@@ -71,7 +71,7 @@ class EWHTests(TestCase):
 
 class EnvironmentTests(TestCase):
     def test_update_inlet(self):
-        env = simulation.Environment()
+        env = environment.Environment()
         old_ambient = env.ambient_temperature
         new_inlet = env.inlet_temperature + 1
         env.update_environment(new_inlet=new_inlet)
@@ -79,7 +79,7 @@ class EnvironmentTests(TestCase):
         self.assertEqual(env.ambient_temperature, old_ambient)
 
     def test_update_ambient(self):
-        env = simulation.Environment()
+        env = environment.Environment()
         old_inlet = env.inlet_temperature
         new_ambient = env.ambient_temperature + 1
         env.update_environment(new_ambient=new_ambient)
@@ -87,7 +87,7 @@ class EnvironmentTests(TestCase):
         self.assertEqual(env.ambient_temperature, new_ambient)
 
     def test_update_both(self):
-        env = simulation.Environment()
+        env = environment.Environment()
         new_ambient = env.ambient_temperature - 1
         new_inlet = env.inlet_temperature + 1
         env.update_environment(new_inlet=new_inlet, new_ambient=new_ambient)
@@ -95,7 +95,7 @@ class EnvironmentTests(TestCase):
         self.assertEqual(env.ambient_temperature, new_ambient)
 
     def test_update_none(self):
-        env = simulation.Environment()
+        env = environment.Environment()
         old_ambient = env.ambient_temperature
         old_inlet = env.inlet_temperature
         env.update_environment()  # do nothing
@@ -103,12 +103,12 @@ class EnvironmentTests(TestCase):
         self.assertEqual(env.ambient_temperature, old_ambient)
 
     def test_environment_singleton(self):
-        default_env = simulation.Environment()
-        singleton = simulation.environment()
+        default_env = environment.Environment()
+        singleton = environment.environment()
         self.assertEqual(singleton, default_env)
         singleton.update_environment(new_inlet=1)
         self.assertNotEqual(singleton, default_env)
-        again = simulation.environment()
+        again = environment.environment()
         self.assertEqual(singleton, again)
         again.update_environment(new_inlet=2)
         self.assertEqual(singleton, again)
