@@ -1,3 +1,5 @@
+import csv
+
 AMBIENT_TEMP = 20  # temperature (in C) of air outside of water heater
 INLET_TEMP = 10  # temperature of water (in C) at inlet
 
@@ -39,3 +41,19 @@ def environment():
         _environment_singleton = Environment(initial_ambient_temperature=AMBIENT_TEMP,
             initial_inlet_temperature=INLET_TEMP)
     return _environment_singleton
+
+def setup_temperature_csv(csv_location):
+    # normal csv_location is '../Data/AirTemperature.csv'
+    with open(csv_location) as csvfile:
+        reader = csv.DictReader(csvfile)
+
+    return [row['Celcius'] for row in reader]
+
+def setup_ambient():
+    return setup_temperature_csv('../Data/AirTemperature.csv')
+
+def setup_inlet():
+    return setup_temperature_csv('../Data/IncomingWaterUse.csv')
+
+def time_step_to_hour(time_step_index):  # TODO
+    return None

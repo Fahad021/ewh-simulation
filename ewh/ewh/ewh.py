@@ -82,10 +82,14 @@ class ElectricWaterHeater(object):
         r_prime = 1.0 / (g + b)
         scalar = math.exp(-config.TIME_SCALING_FACTOR/r_prime)
 
-        inside = g * self.environment.ambient_temperature + b * self.environment.inlet_temperature + self.configuration.power_input
+        ambient = to_fahrenheit(self.environment.ambient_temperature)
+        inlet = to_fahrenheit(self.environment.inlet_temperature)
+
+        inside = g * ambient + b * self.environment.inlet_temperature + self.configuration.power_input
         inside *= r_prime
 
-        return last_temperature * scalar + inside * (1 - scalar)
+        result = to_fahrenheit(last_temperature) * scalar + inside * (1 - scalar)
+        return to_celcius(result)
 
     def update(self):
         last_temperature = self._temperature
@@ -122,3 +126,9 @@ def make_small_ewh():
 def make_large_ewh():
     c = config.HeaterConfiguration(tank_size=TankSize.LARGE)
     return ElectricWaterHeater(configuration=c)
+
+def to_celcius(fahrenheit):
+    return (fahrenheit - 32)/1.8
+
+def to_fahrenheit(celcius):
+    return (celcius * 1.8) + 32
