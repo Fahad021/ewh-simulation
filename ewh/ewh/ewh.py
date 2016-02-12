@@ -119,13 +119,13 @@ class ElectricWaterHeater(object):
 
         return d
 
-def make_small_ewh():
+def make_small_ewh(environment=None):
     c = config.HeaterConfiguration(tank_size=TankSize.SMALL)
-    return ElectricWaterHeater(configuration=c)
+    return ElectricWaterHeater(configuration=c, environment=environment)
 
-def make_large_ewh():
+def make_large_ewh(environment=None):
     c = config.HeaterConfiguration(tank_size=TankSize.LARGE)
-    return ElectricWaterHeater(configuration=c)
+    return ElectricWaterHeater(configuration=c, environment=environment)
 
 def to_celcius(fahrenheit):
     return (fahrenheit - 32)/1.8

@@ -55,5 +55,8 @@ def setup_ambient():
 def setup_inlet():
     return setup_temperature_csv('../Data/IncomingWaterUse.csv')
 
+def setup():
+    pass
+
 def time_step_to_hour(time_step_index):  # TODO
     return None

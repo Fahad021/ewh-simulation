@@ -3,12 +3,7 @@ from states import OnState, PowerUsage
 from config import ControllerConfiguration
 
 class Controller(object):
-    def __init__(self, ewh=None, config=None):
-        if ewh is None:
-            self._ewh = ElectricWaterHeater()
-        else:
-            self._ewh = ewh
-
+    def __init__(self, ewh, config=None):
         if config is None:
             self._config = ControllerConfiguration()
         else:
@@ -30,6 +25,8 @@ class Controller(object):
             self._ewh.got_to_regular_power_mode()
 
     def receive_command(self):
+        self._ewh.update()
+
         if self._usage_state == PowerUsage.REGULAR:
             self._usage_state = PowerUsage.LOW
             self._usage_state_changes += 1

@@ -1,11 +1,17 @@
 import itertools
 import random
 
+import environment
+import ewh
+import controller
+
 class Simulation(object):
-    def __init__(self):
-        self._environment = environment()
+    def __init__(self, population_size, rng_seed=None):
+        self._environment = environment.environment()
         self._hub = None
         self._population = []
+
+        random.seed(rng_seed)
 
     def add_controllers_to_population(self, population):
         self._population.extend(population)
@@ -18,14 +24,14 @@ class Simulation(object):
             run_time_step(*subset_divider(self._population))
 
     def run_time_step(self, used_subset, unused_subset):
-        pass
+        for controller in used_subset:
+            controller.receive_command()
 
-    def poll_controller_bidirectional(self, controller):
-        controller.poll()
+        for controller in unused_subset:
+            controller.poll()
 
-        message = controller.info(include_ewh=True)
-
-        # TODO: ... coming soon to a theatre near you
+    def build_random_population(population_size):
+        self._population = [build_random_controller() for _ in range(population_size)]
 
 def make_range(start, end):
     """Return a generator of the time steps to iterate over"""
@@ -46,3 +52,11 @@ def randomize_subset_variable_limited_size(population, max_subset_size):
     if max_subset_size > len(population):
         max_subset_size = len(population)
     return randomize_subset_constant_size(population, random.randint(0, max_subset_size))
+
+def build_random_controller():
+    if random.random() <= 0.4:
+        heater = ewh.make_small_ewh()
+    else:
+        heater = ewh.make_large_ewh()
+
+    return controller.Controller(heater)
