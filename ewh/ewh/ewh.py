@@ -1,4 +1,4 @@
-from states import OnState
+from states import OnState, TankSize
 import config
 import simulation
 
@@ -20,7 +20,7 @@ class ElectricWaterHeater(object):
             self._environment = environment
 
         self._total_time_on = 0
-        self._temperature = self.configuration.initial_tank_temperature
+        self._temperature = self._environment.ambient_temperature
         self._lower_limit = self.configuration.regular_power_temp
 
     @property
@@ -116,7 +116,9 @@ class ElectricWaterHeater(object):
         return d
 
 def make_small_ewh():
-    pass
+    c = config.HeaterConfiguration(tank_size=TankSize.SMALL)
+    return ElectricWaterHeater(configuration=c)
 
 def make_large_ewh():
-    pass
+    c = config.HeaterConfiguration(tank_size=TankSize.LARGE)
+    return ElectricWaterHeater(configuration=c)

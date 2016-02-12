@@ -13,3 +13,7 @@ class PowerUsage(enum.Enum):
 
     def __str__(self):
         return self.name
+
+class TankSize(enum.Enum):
+    SMALL = 180
+    LARGE = 270

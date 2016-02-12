@@ -1,20 +1,14 @@
-DESIRED_TEMPERATURE = 55  # in celcius
-REGULAR_POWER_LOWER_LIMIT = 50
-LOW_POWER_LOWER_LIMIT = 45 # absolute lowest temp (in C) before EWH must turn itself back on
-TANK_SURFACE_AREA = 0  # in square meters
-TANK_RADIUS = 0  # in meters
-TANK_HEIGHT = 0  # in meters
-INLET_TEMP = 10  # temperature of water (in C) at inlet
-AVERAGE_KWH = 1  # average power usage (in kilowatt hours)
-AMBIENT_TEMP = 20  # temperature (in C) of air outside of water heater
+from states import TankSize
+
+DESIRED_TEMPERATURE = 75  # in celcius
+REGULAR_POWER_LOWER_LIMIT = 70
+LOW_POWER_LOWER_LIMIT = 65 # absolute lowest temp (in C) before EWH must turn itself back on
 INITIAL_TANK_TEMPERATURE = 20
 ACTION_POWER_CONSUMPTION = 1  # power usage when switching state
 INSULATION_THERMAL_RESISTANCE = 1
 
 TIME_SCALING_FACTOR = 1
 SPECIFIC_HEAT_OF_WATER = 1
-HEATING_ELEMENT_RATING_270_LITER = 4.2  # kW
-HEATING_ELEMENT_RATING_180_LITER = 2.8  # kW
 
 
 class Configuration(object):
@@ -44,24 +38,27 @@ class ControllerConfiguration(Configuration):
         return self._action_power
 
 class HeaterConfiguration(Configuration):
-    # TODO: consistent naming (temp vs temperature)
     def __init__(self,
-                desired_temp=DESIRED_TEMPERATURE,
-                low_power_temp=LOW_POWER_LOWER_LIMIT,
-                regular_power_temp=REGULAR_POWER_LOWER_LIMIT,
-                tank_surface_area=TANK_SURFACE_AREA,
-                tank_radius=TANK_RADIUS,
-                tank_height=TANK_HEIGHT,
-                initial_tank_temperature=INITIAL_TANK_TEMPERATURE
-                heating_element_rating=HEATING_ELEMENT_RATING_270_LITER):
-        self._desired_temp = desired_temp
-        self._low_power_temp = low_power_temp
-        self._regular_power_temp = regular_power_temp
-        self._tank_surface_area = tank_surface_area
-        self._tank_radius = tank_radius
-        self._tank_height = tank_height
-        self._initial_temperature = initial_tank_temperature
-        self._heating_element_rating = heating_element_rating
+                desired_temperature=DESIRED_TEMPERATURE,
+                low_power_temperature=LOW_POWER_LOWER_LIMIT,
+                regular_power_temperature=REGULAR_POWER_LOWER_LIMIT,
+                tank_size=TankSize.SMALL):
+        self._desired_temp = desired_temperature
+        self._low_power_temp = low_power_temperature
+        self._regular_power_temp = regular_power_temperature
+
+        if tank_size == TankSize.LARGE:
+            # 180 liter tank
+            self._tank_surface_area = 3.43062  # meters^2
+            self._tank_radius = 0.30  # meters
+            self._tank_height = 1.52
+            self._heating_element_rating = 4.2  # kW
+        else:
+            # 270 liter tank
+            self._tank_surface_area = 2.69172
+            self._tank_radius = 0.28
+            self._tank_height = 1.25
+            self._heating_element_rating = 2.8
 
     def info(self):
         return {
@@ -71,8 +68,6 @@ class HeaterConfiguration(Configuration):
             'tank_surface_area': self.tank_surface_area,
             'tank_radius': self.tank_radius,
             'tank_height': self.tank_height,
-            'tank_size': self.tank_size,
-            'initial_tank_temperature': self.initial_tank_temperature,
             'insulation_thermal_resistance': self.insulation_thermal_resistance,
         }
 
@@ -106,11 +101,6 @@ class HeaterConfiguration(Configuration):
     def tank_height(self):
         """Height of the water tank, in meters"""
         return self._tank_height
-
-    @property
-    def tank_size(self):
-        """Total size of the water tank, in liters"""
-        return self.tank_radius * self.tank_height
 
     @property
     def initial_tank_temperature(self):
