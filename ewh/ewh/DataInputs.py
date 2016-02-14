@@ -9,7 +9,7 @@ with open('../Data/WaterUse.csv') as csvfile:
         value = row['Gallons/Hour']
         a.append(value)
 
-#  foo = (time of program * TIME_SCALING_FACTOR)%24
+#  foo = (time of program * TIME_SCALING_FACTOR)%24-1
 foo = ((25 * 1)%24)-1
 bar = a[foo]
 
@@ -24,6 +24,7 @@ with open('../Data/AirTemperature.csv') as csvfile:
         value = row['Fahrenheit']
         b.append(value)
 
+#  alpha = (time of program * TIME_SCALING_FACTOR)/24
 alpha = math.ceil((1320 * 1)/24)
 beta = b[alpha]
 
@@ -38,6 +39,7 @@ with open('../Data/IncomingWaterUse.csv') as csvfile:
         value = row['Fahrenheit']
         c.append(value)
 
+#  proton = (time of program * TIME_SCALING_FACTOR)/24
 proton = math.ceil((1320 * 1)/24)
 electron = b[proton]
 
