@@ -110,7 +110,7 @@ for i in range(0, 9999):
         for k in range(0, 24):
             if j == 0 and k == 0:
                 # day 1, hour 1 case. Need to set initial values for all 10,000 ewh
-                EWH_temperature[i,j,k] = #whatever we initially set this to
+                EWH_temperature[i,j,k] = #whatever we initially set initial temperature to
             elif k == 0:
                 EWH_temperature[i,j,k] = new_temperature(self, EWH_temperature[i,j-1,23], demand)
                 # this should take care of every midnight
@@ -151,13 +151,19 @@ for i in range(0, 9999):
 # every day of the year. If we can extract only couple of days it would satisfy our needs and be so much less
 # cumbersome
 
-with open('../Data/Energy_Use.csv', 'wb') as csvfile:
+with open('../Data/Energy_Use_hour.csv', 'wb') as csvfile:
     for i in range(0, 9999):
         for j in range(45, 46): # this day should be around middle of February, would be good to show response in
             # cold weather conditions, we can then change the day as we want
             for k in range(0, 24):
+            writer = csv.writer(csvfile)
+            writer.writerows(EWH_energy_use_hour)
+
+with open('../Data/Energy_Use_day.csv', 'wb') as csvfile:
+    for i in range(0, 9999):
+        for j in range(0, 365):
         writer = csv.writer(csvfile)
-        writer.writerows(EWH_energy_use_hour)
+        writer.writerows(day)
 
 #in the __init__() method, create a new instance variable as an empty array (something like self._temperature_list = []),
 # then in the poll method add to that list (do self._temperature_list.append(temperature))
