@@ -10,34 +10,7 @@ INSULATION_THERMAL_RESISTANCE = 1
 TIME_SCALING_FACTOR = 1
 SPECIFIC_HEAT_OF_WATER = 1
 
-
-class Configuration(object):
-    def __eq__(self, given_configuration):
-        return self.info() == given_configuration.info()
-
-
-class ControllerConfiguration(Configuration):
-    def __init__(self,
-                 power_usage=AVERAGE_KWH,
-                 action_power=ACTION_POWER_CONSUMPTION):
-        self._kwh = kwh
-        self._action_power = action_power
-
-    def info(self):
-        return {
-            'power_consumption': self.power_consumption,
-            'state_change_power_consumption': self.state_change_power_consumption,
-        }
-
-    @property
-    def power_consumption(self):
-        return self._kwh
-
-    @property
-    def state_change_power_consumption(self):
-        return self._action_power
-
-class HeaterConfiguration(Configuration):
+class HeaterConfiguration(object):
     def __init__(self,
                 desired_temperature=DESIRED_TEMPERATURE,
                 low_power_temperature=LOW_POWER_LOWER_LIMIT,
@@ -59,6 +32,9 @@ class HeaterConfiguration(Configuration):
             self._tank_radius = 0.28
             self._tank_height = 1.25
             self._heating_element_rating = 2.8
+
+    def __eq__(self, given_configuration):
+        return self.info() == given_configuration.info()
 
     def info(self):
         return {
