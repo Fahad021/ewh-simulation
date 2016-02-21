@@ -13,11 +13,8 @@ class Controller(object):
             self._usage_state_changes += 1
 
     def poll(self):
-        """Update the EWH and state machine as if no message had been sent."""
-        self._ewh.update()  # update temperature and independent heater on/off
-        if self._ewh.needs_regular_power_mode():
-            self.change_usage_state(PowerUsage.REGULAR)
-            self._ewh.got_to_regular_power_mode()
+        """Update the EWH's temperature as if no message had been sent."""
+        self._ewh.update()
 
     def receive_low_power_signal(self):
         """Simulate a command from the hub to go into low-power mode."""
@@ -31,6 +28,11 @@ class Controller(object):
         self._ewh.update()
         self.change_usage_state(PowerUsage.REGULAR)
         self._ewh.go_to_regular_power_mode()
+        self._commands_received += 1
+
+    def receive_force_configuration_signal(self, new_config):
+        self._ewh.configuration = new_config
+        self._ewh.update()
         self._commands_received += 1
 
     def total_power_consumption(self):

@@ -51,9 +51,6 @@ class ElectricWaterHeater(object):
     def heater_needs_to_turn_on(self):
         return (self._on_state == OnState.OFF) and (self._temperature < self._lower_limit)
 
-    def needs_regular_power_mode(self):
-        return self._temperature < self.configuration.low_power_temperature
-
     def switch_power(self, state):
         self._on_state = state
 

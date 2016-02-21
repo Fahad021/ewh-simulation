@@ -4,17 +4,19 @@ import random
 import environment
 import ewh
 import controller
+from states import TankSize
 
 class SimulationHub(object):
-    def __init__(self, population_size, rng_seed=None):
+    def __init__(self, **kwargs):
         self._environment = environment.environment()
-        self._hub = None
-        self._population = []
 
-        random.seed(rng_seed)
+        if kwargs['tank_size'] == TankSize.SMALL:
+            builder = build_small_tank_population
+        else:
+            builder = build_large_tank_population
+        self._population = builder(kwargs['population_size'])
 
-    def add_controllers_to_population(self, population):
-        self._population.extend(population)
+        random.seed(kwargs['seed'])
 
     def run(self, start_time_step=0, time_steps=None, subset_divider=None, subset_size=None):
         if subset_divider is None:
@@ -24,15 +26,12 @@ class SimulationHub(object):
             run_time_step(*subset_divider(self._population))
 
     def run_time_step(self, used_subset, unused_subset):
-        for controller in used_subset:
-            #controller.receive_command()
+        for c in used_subset:
+            #c.receive_command()
             pass
 
-        for controller in unused_subset:
-            controller.poll()
-
-    def build_random_population(population_size):
-        self._population = [build_random_controller() for _ in range(population_size)]
+        for c in unused_subset:
+            c.poll()
 
 def make_range(start, end):
     """Return a generator of the time steps to iterate over"""
@@ -53,6 +52,12 @@ def randomize_subset_variable_limited_size(population, max_subset_size):
     if max_subset_size > len(population):
         max_subset_size = len(population)
     return randomize_subset_constant_size(population, random.randint(0, max_subset_size))
+
+def build_small_tank_population(population_size):
+    return [controller.Controller(ewh.make_small_ewh()) for _ in range(population_size)]
+
+def build_large_tank_population(population_size):
+    return [controller.Controller(ewh.make_large_ewh()) for _ in range(population_size)]
 
 def build_random_controller():
     if random.random() <= 0.4:
