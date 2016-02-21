@@ -8,7 +8,7 @@ def main():
     csv_directory, seed = parse_args()
 
     environment.setup()
-    sim = Simulation(rng_seed=seed)
+    sim = SimulationHub(rng_seed=seed)
     sim.build_random_population()
     sim.run()
 

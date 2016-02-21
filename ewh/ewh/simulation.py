@@ -5,7 +5,7 @@ import environment
 import ewh
 import controller
 
-class Simulation(object):
+class SimulationHub(object):
     def __init__(self, population_size, rng_seed=None):
         self._environment = environment.environment()
         self._hub = None

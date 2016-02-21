@@ -1,15 +1,3 @@
-class Hub(object):
-    def __init__(self):
-        pass
-
-    def receive_messages(self, messages):
-        pass
-
-    def parse_message(self, message):
-        pass
-
-    def cold_load_pickup(self, population):
-
 # TODO PAUL communication protocol
 # Tell entire population to go into low power mode
 #   control.go_to_low_power()
