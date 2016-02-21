@@ -14,10 +14,7 @@ class ElectricWaterHeater(object):
         else:
             self._config = configuration
 
-        if environment is None:
-            self._environment = environment.environment()
-        else:
-            self._environment = environment
+        self._environment = environment
 
         self._total_time_on = 0
         self._temperature = self._environment.ambient_temperature
@@ -30,10 +27,6 @@ class ElectricWaterHeater(object):
     @configuration.setter
     def configuration(self, c):
         self._config = c
-
-    @property
-    def environment(self):
-        return self._environment
 
     @property
     def total_time_on(self):
@@ -73,9 +66,10 @@ class ElectricWaterHeater(object):
         diff = current_temperature - self.environment.inlet_temperature
         return scalar * current_demand * diff
 
-    def new_temperature(self, last_temperature, demand):
+    def new_temperature(self, last_temperature):
         g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
-        b = demand * 8.3 * config.SPECIFIC_HEAT_OF_WATER
+        # TODO: demand is in litres, may need to be in gallons
+        b = self.environment.demand * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         r_prime = 1.0 / (g + b)
         scalar = math.exp(-config.TIME_SCALING_FACTOR/r_prime)
 

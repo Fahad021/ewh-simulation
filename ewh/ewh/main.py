@@ -1,5 +1,6 @@
 import argparse
-import os.path
+import os
+import sys
 
 from states import TankSize
 
@@ -26,14 +27,21 @@ def parse_args():
         help="number of heaters in population",
         dest="population_size",
         type=int)
-
-
-    # TODO: output directory
+    parser.add_argument("--start-time-step",
+        dest="start_time_step",
+        type=int)
+    parser.add_argument('--end-time-step',
+        dest="end_time_step",
+        type=int)
 
     args = parser.parse_args()
 
     if args['csv_directory'] is None:
         args['csv_directory'] = '../Data/'
+
+    if not os.path.isdir(csv_directory):
+        parser.error("Directory '{0}' does not exist.".format(csv_directory))
+        sys.exit(1)
 
     if args['tank_size'] == 180:
         args['tank_size'] = TankSize.SMALL
@@ -43,8 +51,8 @@ def parse_args():
     if args['population_size'] is None:
         args['population_size'] = 10000
 
-    if not os.path.isdir(csv_directory):
-        parser.error("Directory '{0}' does not exist.".format(csv_directory))
+    if args['start_time_step'] is None:
+        args['start_time_step'] = 0
 
     return args
 

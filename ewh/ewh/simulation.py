@@ -8,7 +8,7 @@ from states import TankSize
 
 class SimulationHub(object):
     def __init__(self, **kwargs):
-        self._environment = environment.environment()
+        self._environment = environment.setup_environment(args['csv_location'])
 
         if kwargs['tank_size'] == TankSize.SMALL:
             builder = build_small_tank_population
@@ -22,7 +22,8 @@ class SimulationHub(object):
         if subset_divider is None:
             subset_divider = lambda population, subset_size: (population, [])  # use identity function
 
-        for time_step in make_range(start_time_step, time_steps):
+        for time_step_index in make_range(start_time_step, time_steps):
+            self._environment.sync_timestep(time_step_index)
             run_time_step(*subset_divider(self._population))
 
     def run_time_step(self, used_subset, unused_subset):
@@ -58,11 +59,3 @@ def build_small_tank_population(population_size):
 
 def build_large_tank_population(population_size):
     return [controller.Controller(ewh.make_large_ewh()) for _ in range(population_size)]
-
-def build_random_controller():
-    if random.random() <= 0.4:
-        heater = ewh.make_small_ewh()
-    else:
-        heater = ewh.make_large_ewh()
-
-    return controller.Controller(heater)

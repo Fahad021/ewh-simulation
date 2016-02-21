@@ -2,6 +2,8 @@ import csv
 import itertools
 import os
 
+import config
+
 AMBIENT_TEMP = 20  # temperature (in C) of air outside of water heater
 INLET_TEMP = 10  # temperature of water (in C) at inlet
 
@@ -28,6 +30,9 @@ class Environment(object):
 
     def advance_hour(self):
         self._current_hour += 1
+
+    def sync_timestep(self, time_step_index):
+        self._current_hour = 60 / config.TIME_SCALING_FACTOR  # TODO: this calc may not be right
 
     def info(self):
         return {
@@ -70,6 +75,3 @@ def setup_environment(csv_directory):
     mapping = zip(yearly_demand, ambient, inlet)
     _environment_singleton = Environment(mapping)
     return _environment_singleton
-
-def time_step_to_hour(time_step_index):  # TODO
-    return None
