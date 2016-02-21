@@ -25,7 +25,8 @@ class Simulation(object):
 
     def run_time_step(self, used_subset, unused_subset):
         for controller in used_subset:
-            controller.receive_command()
+            #controller.receive_command()
+            pass
 
         for controller in unused_subset:
             controller.poll()

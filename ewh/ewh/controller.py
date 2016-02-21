@@ -24,13 +24,16 @@ class Controller(object):
             self.change_usage_state(PowerUsage.REGULAR)
             self._ewh.got_to_regular_power_mode()
 
-    def receive_command(self):
+    def receive_low_power_signal(self):
         self._ewh.update()
+        self.change_usage_state(PowerUsage.LOW)
+        self._ewh.go_to_low_power_mode()
+        self._commands_received += 1
 
-        if self._usage_state == PowerUsage.REGULAR:
-            self._usage_state = PowerUsage.LOW
-            self._usage_state_changes += 1
-            self._ewh.go_to_low_power_mode()
+    def receive_regular_power_signal(self):
+        self._ewh.update()
+        self.change_usage_state(PowerUsage.REGULAR)
+        self._ewh.go_to_regular_power_mode()
         self._commands_received += 1
 
     def total_power_consumption(self):
