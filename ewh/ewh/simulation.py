@@ -10,7 +10,7 @@ from states import TankSize
 
 class SimulationHub(object):
     def __init__(self, **kwargs):
-        self._environment = environment.setup_environment(kwargs['csv_location'])
+        self._environment = environment.setup_environment(kwargs['csv_location'], kwargs['time_scaling_factor'])
 
         if kwargs['tank_size'] == TankSize.SMALL:
             builder = build_small_tank_population
@@ -20,7 +20,8 @@ class SimulationHub(object):
 
         random.seed(kwargs['seed'])
 
-        self._time_step_range = make_range(args['start_time_step'], args['end_time_step'])
+        self._time_step_range = make_range(kwargs['start_time_step'], kwargs['end_time_step'])
+        self._hub_interval = kwargs['hub_interval']
 
     def run(self, subset_divider=None, subset_size=None):
         if subset_divider is None:
@@ -30,10 +31,22 @@ class SimulationHub(object):
             self._environment.sync_timestep(time_step_index)
             info = pprint.pformat(self._environment.info())
             logging.info('Time Step {0}, Environment: {1}'.format(time_step_index, info))
-            run_time_step(*subset_divider(self._population))
 
-    def run_time_step(self, used_subset, unused_subset):
+            if (time_step_index % self._hub_interval) == 0:
+                # calc and send some messages
+                logging.info('Hub step')
+                self.hub_step(*subset_divider(self._population))
+            else:
+                # hub does nothing this step - just update temperatures in ewhs
+                logging.info('Non-hub step')
+                self.poll_population()
+
+    def hub_step(self, used_subset, unused_subset):
         pass
+
+    def poll_population(self):
+        for c in self._population:
+            c.poll()
 
 def make_range(start, end):
     """Return a generator of the time steps to iterate over"""

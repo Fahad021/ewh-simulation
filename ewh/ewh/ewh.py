@@ -71,7 +71,7 @@ class ElectricWaterHeater(object):
         # TODO: demand is in litres, may need to be in gallons
         b = self.environment.demand * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         r_prime = 1.0 / (g + b)
-        scalar = math.exp(-config.TIME_SCALING_FACTOR/r_prime)
+        scalar = math.exp(-self.environment.time_scaling_factor/r_prime)
 
         ambient = to_fahrenheit(self.environment.ambient_temperature)
         inlet = to_fahrenheit(self.environment.inlet_temperature)

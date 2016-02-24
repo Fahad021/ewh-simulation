@@ -20,7 +20,8 @@ def parse_args():
     parser.add_argument("--csv",
         dest="csv_directory",
         help="directory containing input csv data files",
-        metavar="DIRECTORY")
+        metavar="DIRECTORY",
+        default="../Data/")
     parser.add_argument("--tank-size",
         help="heater tank size in liters",
         type=int,
@@ -28,9 +29,11 @@ def parse_args():
     parser.add_argument("--population-size",
         help="number of heaters in population",
         dest="population_size",
+        default=1000,
         type=int)
     parser.add_argument("--start-time-step",
         dest="start_time_step",
+        default=0,
         type=int)
     parser.add_argument('--end-time-step',
         dest="end_time_step",
@@ -42,11 +45,18 @@ def parse_args():
         dest="log_level",
         choices=['INFO', 'DEBUG'],
         default="DEBUG")
+    parser.add_argument('--hub-interval',
+        help="time steps per hub recalculate/message delivery"
+        dest="hub_interval",
+        default=5,
+        type=int)
+    parser.add_argument('--scaling-factor',
+        help="time steps per hour",
+        default=60,  # once per minute,
+        dest="time_scaling_factor",
+        type=int)
 
     args = parser.parse_args()
-
-    if args['csv_directory'] is None:
-        args['csv_directory'] = '../Data/'
 
     if not os.path.isdir(csv_directory):
         parser.error("Directory '{0}' does not exist.".format(csv_directory))
@@ -56,12 +66,6 @@ def parse_args():
         args['tank_size'] = TankSize.SMALL
     else:
         args['tank_size'] = TankSize.LARGE
-
-    if args['population_size'] is None:
-        args['population_size'] = 10000
-
-    if args['start_time_step'] is None:
-        args['start_time_step'] = 0
 
     # set up logging
     if args['log_file'] is None:
