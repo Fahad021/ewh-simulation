@@ -4,21 +4,33 @@ import environment
 
 import time
 import math
+import logging
+import pprint
 
 
 class ElectricWaterHeater(object):
-    def __init__(self, state=OnState.OFF, configuration=None, environment=None):
+    def __init__(self, randomize=False, state=OnState.OFF, configuration=None, env=None):
         self._on_state = state
-        if configuration is None:
-            self._config = config.HeaterConfiguration()  # use default
-        else:
-            self._config = configuration
 
-        self._environment = environment
+        if configuration is None:
+            configuration = config.HeaterConfiguration()  # use default
+        if env is None:
+            env = environment.environment()
+
+        self._config = configuration
+        self._environment = env
 
         self._total_time_on = 0
-        self._temperature = self._environment.ambient_temperature
         self._lower_limit = self.configuration.regular_power_temperature
+
+        if randomize:
+            # set temperature somewhere within deadband
+            self._temperature = random.uniform(self.configuration.low_power_temperature, self.configuration.desired_temp)
+        else:
+            # set to outside temperature
+            self._temperature = self._environment.desired_temp
+
+        logging.debug("Initial {0}".format(pprint.pformat(self.info(include_config=True))))
 
     @property
     def configuration(self):
@@ -44,8 +56,9 @@ class ElectricWaterHeater(object):
     def heater_needs_to_turn_on(self):
         return (self._on_state == OnState.OFF) and (self._temperature < self._lower_limit)
 
-    def switch_power(self, state):
-        self._on_state = state
+    def switch_power(self, new_state):
+        logging.debug("EWH turning {0}".format(str(new_state)))
+        self._on_state = new_state
 
     def convection_losses(self, current_temperature):
         """Calculate the amount of heat lost per hour due to the temperature
@@ -68,8 +81,7 @@ class ElectricWaterHeater(object):
 
     def new_temperature(self, last_temperature):
         g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
-        # TODO: demand is in litres, may need to be in gallons
-        b = self.environment.demand * 8.3 * config.SPECIFIC_HEAT_OF_WATER
+        b = to_gallons(self.environment.demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         r_prime = 1.0 / (g + b)
         scalar = math.exp(-self.environment.time_scaling_factor/r_prime)
 
@@ -84,9 +96,9 @@ class ElectricWaterHeater(object):
 
     def update(self):
         last_temperature = self._temperature
-        demand = 0  # TODO: tie this in from graphs
+        self._temperature = self.new_temperature(last_temperature)
 
-        self._temperature = self.new_temperature(last_temperature, demand)
+        logging.debug('EWH temperature {0} to {1}'.format(last_temperature, self._temperature))
 
         if self.heater_is_on():
             self._total_time_on += 1
@@ -123,3 +135,7 @@ def to_celcius(fahrenheit):
 
 def to_fahrenheit(celcius):
     return (celcius * 1.8) + 32
+
+def to_gallons(litres):
+    # ASSUMING US GALLONS BECAUSE THE IMPERIAL SYSTEM IS STUPID
+    return 0.264172052 * litres
