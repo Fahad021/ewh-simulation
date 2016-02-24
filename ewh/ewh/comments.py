@@ -1,69 +1,74 @@
-# TODO PAUL communication protocol
-# Tell entire population to go into low power mode
-#   control.go_to_low_power()
-# for i in range(0, 9999):
-    # for j = current day:
-        # for k = current hour:
-#           EWH_mode[i,j,k] = 1
-            # note set ALL ewh to low power mode regardless of temperature, next time they calculate those
-            # with low temperature will turn back on
+# TODO LOW POWER MODE MANAGEMENT
+# TODO NO COMMUNICATION
+# No instructions, this is normal behavior
 
-# Tell population to turn back on
-#   right before count how many are in low power still
-#   this could be some useful data, as in 75% didn't have to turn back on with our software
-#   A better method would be to count only those who never turned back on, as those who turn back on but finish
-#   warming up before the lowpower instructions and therefore go back to low power
-#   control.go_to_regular_power()
-#   update EWH_mode
-# for i in range(0, 9999):
-    # for j = current day:
-        # for k = current hour:
-#            if EWH_temperature[i,j,k] > REGULAR_POWER_LOWER_LIMIT:
-#            EWH_mode[i,j,k] = 2
-#            else:
-#            EWH_mode[i,j,k] = 3
-# I'm
+# TODO Unidirectional
+# When receive_low_power_signal message is sent
+# Update change_usage_state
+# Temperature violation will allow EWH to go back intro regular mode and heat up to desired TEMP
 
-# TODO Cases of turning back on
-# Different methods, if all at same time or slowly (prioritized distribution function)
+# TODO Bidirectional
+# Same as unidirectional, EXCEPT that whenever an EWH needs to turn back on it needs to inform hub it's turning back on
+# (we might want to know it's water usage and temperature as to know why it turned back on, having a percentage of EWH
+# who stayed off won't be enough)
+# Need to know on a per peak basis (per day and morning or evening peak), as well don't count EWH twice per peak if
+# it happens
 
-# If unidirectional, everyone gets turned back on at same time (all 10,000) regardless of Temperature
+# ---------------------------------------------------------------------------------------------------------------------
 
-# If it's  bidirectional and there is no distribution function (or distribution function = 0 hours)
-# turn everyone back on at once as well, only those that don't satisfy
-# if EWH_temperature[i,j,k] > REGULAR_POWER_LOWER_LIMIT:
+# TODO PICK UP MANAGEMENT
+# TODO NO COMMUNICATION
+# Background: no communication is the current system, this system has no hub. We are implementing this to have a
+# comparison with our unidirectional and bidirectional systems. EWH's are free to act, each time temperature goes below
+# their predetermined deadband, turn back on until hotter than upper limit.
+# Control Interest: none
+# Data interest: avg power use per day and in cold/hot days
 
-# If however we have a random distribution function we have several cases.
-# In unidirectional simply do (10,000)/(hours set for distribution function * 60) since we have no clue
-# if a certain EWH is in regular mode due to one way communication. Also need to have an error prevention due to
-# rounding.
+# TODO Unidirectional
+# Background: Of interest to us is Hub communicating with EWH's, not viceversa (because we wouldn't be able to send
+# low power mode message, out of scope making controller being able to read off grid information as idea is to have
+# dumb controller and smart hub). Need to feed peak times
+# Control interest: reactivation period and temperature deadband (only if we change the way they operate in the
+# sense that they will heat up to a defined deadband above lower limit instead of desired temperature)
+# Data interest: avg daily power use, comparison to no communication and normal grid (see how many
+# MW's we can shave off)
+# Pick up Management:
+# 1.- Not controlled: ie everyone is turned back at once (should create new peak)
+#   if receive_regular_power_signal received
+#       all EWH's population change_usage_state(PowerUsage.REGULAR)
+#
+# 2.- Random spread (regardless of internal Temp as we don't have this data). Need to define time period
+# (1 hr, 2 hr etc). Could be nice to use queue and simply pop each amount every time step
+#   if receive_regular_power_signal received & random spread management (define time)
+#       turn on population by EWH's order this way
+#           for every time step starting immediately turn on this amount of EWH's per time step
+#           math.ceil EWH population size /( period time in hrs * (60 / time step))
+#           careful of error due to rounding, as rounding to next closest int will definitely make the population
+#           larger than it really is if we work with fractions. So might want to add an if statement preventing this
 
-# For bidirectional we will follow something similar except instead of randomly turning back on we will get the
-# X EWH's and put them in increasing temperature order. Then using same formula as above turn them back on per minute
-# basis.
-# If we want to go further than this in bidirectional I have a great idea, instead of turning them back on
-# linearly let's turn them back on smoothly where we analyze the temperature quickly and turn on slowly at
-# beginning (the coldest ones since they will be turned on for longer anyways) and then turn back on faster
-# the warmer ones as they will be warmer inside and will remain on for a shorter period of time.
-# I'm thinking this may avoid a bit of constructive building at the beginning, this might make a smoother transition.
-# If we don't want to analyze on a per case basis I have in mind a way of getting a nice formula for a general case.
-# We can try it later on if time permits and see results, if good Bouffard will win noble prize and we will be forever
-# immortalized with all the fame as we have cured the world of climate change, if not we can still show it
-# and say it's bad and then nobody losses their time trying it and Trump wins the elections, no big deal.
+# TODO Bidirectional
+# Background: Now we have EWH <--> HUB communication. Need to feed peak times and need to track every EWH with all
+# it's data. So for each EWH know temperature, operation mode, power consumption etc for EACH time step
+# Control interest: Potentially implement a nonlinear prioritized function
+# Data interest: Same as Unidirectional as well as knowing how many EWH's managed to remain on/off during power peak
+# Pick up Management:
+# 1.- Not controlled: ie everyone is turned back at once (should create new peak)
+#   if receive_regular_power_signal received
+#       all EWH's population change_usage_state(PowerUsage.REGULAR)
+# This should give same data as unidirectional
+#
+# 2.- Prioritized Function: since bidirectional, when receive receive_regular_power_signal message, order in queue
+# by increasing order all temperatures. Then same function as unidirectional. Only difference is this discriminates by
+# water temperature.
+# We should clarify if we recalculate and reorder the queue after each time step, maybe there is a strong demand for
+# one EWH which makes it eligible to switch places to turn on quicker
 
-# Also I'm worried we didn't set up the states well enough. We need to know for each state on or off. Let me explain my
-# point. The EWH has been instructed to be in low power mode (we can safely assume when in this mode it is ALWAYS off).
-# If an EWH needs to go into regular mode due to a threshold violation it will immediately be turned on until
-# internal temperature is above the upper threshold. Now something I don't think we have thought about is what happens
-# then, does it stay on regular mode or is it sent back to low power mode. I think the answer should be it depends,
-# let me clarify.
+# ---------------------------------------------------------------------------------------------------------------------
 
-# Now if we have a bidirectional setup, we should send back the EWH into lower power mode IFF the power peak is still
-# going on (6AM-10AM & 4PM-8PM) && there is a random distribution function. If the peak is over or there is no random
-# distribution function we should keep it in regular mode to avoid having it in the queue as it's already fairly warm.
-# Now in regular mode we want to know if it is on or off. In low power mode we know it will always be off. Adding
-# this information adds more information to array 2. In which the 3rd array will no longer be 0,1  but can be
-# 1 = low power mode OFF
-# 2 = regular power mode OFF
-# 3 = regular power mode ON
-# no need for low power mode ON as it should not exist
+# TODO COLD LOAD PICKUP
+# We need to assume the entire network has been disconnected for a while
+# Therefore make internal EWH temperature a random distribution of temperatures between incoming water temperature
+# at the day tested and the air temperature of day tested
+# Now this only applies to Unidirectional and Bidirectional EWH's
+# Now we need to find a smart and efficient way of bringing them slowly back to temperatures.
+# to do this we will need to think about a couple of ways and implement them to see actual results
