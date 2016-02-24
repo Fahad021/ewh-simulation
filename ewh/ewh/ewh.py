@@ -81,7 +81,7 @@ class ElectricWaterHeater(object):
 
     def new_temperature(self, last_temperature):
         g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
-        b = to_gallons(self.environment.demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
+        b = randomize_demand(self.environment.demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         r_prime = 1.0 / (g + b)
         scalar = math.exp(-self.environment.time_scaling_factor/r_prime)
 
@@ -121,6 +121,9 @@ class ElectricWaterHeater(object):
             d['configuration'] = self.configuration.info()
 
         return d
+
+def randomize_demand(demand_in_litres):
+    return random.uniform(0, 2) * to_gallons(demand_in_litres)
 
 def make_small_ewh(environment=None):
     c = config.HeaterConfiguration(tank_size=TankSize.SMALL)
