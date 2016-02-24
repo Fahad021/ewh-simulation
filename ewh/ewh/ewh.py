@@ -6,7 +6,7 @@ import time
 import math
 import logging
 import pprint
-
+import random
 
 class ElectricWaterHeater(object):
     def __init__(self, randomize=False, state=OnState.OFF, configuration=None, env=None):

@@ -1,11 +1,22 @@
 from ewh import ElectricWaterHeater
 from states import OnState, PowerUsage
 
+import logging
+import pprint
+import random
+
 class Controller(object):
-    def __init__(self, ewh):
-        self._usage_state = PowerUsage.REGULAR
+    def __init__(self, heater, randomize=False):
         self._usage_state_changes = 0
         self._commands_received = 0
+        self._ewh = heater
+
+        if randomize and random.choice([True, False]):
+            self._usage_state = random.choice([PowerUsage.REGULAR, PowerUsage.LOW])
+        else:
+            self._usage_state = PowerUsage.REGULAR
+
+        logging.debug("Initial controller {0}".format(pprint.pformat(self.info(include_ewh=True))))
 
     def change_usage_state(self, new_state):
         if self._usage_state != new_state:
@@ -44,6 +55,6 @@ class Controller(object):
         }
 
         if include_ewh:
-            d['heater'] = self._ewh.info(include_config=include_config)
+            d['heater'] = self._ewh.info(include_config=True)
 
         return d
