@@ -1,6 +1,7 @@
 import csv
 import itertools
 import os
+import pprint
 
 import config
 
@@ -11,6 +12,7 @@ class Environment(object):
     def __init__(self, mapping, start_hour=0):
         self._mapping = mapping
         self._current_hour = start_hour
+        logging.debug('Set up environment with mapping {0}'.format(pprint.pformat(mapping)))
 
     @property
     def current_tuple(self):
@@ -33,6 +35,7 @@ class Environment(object):
 
     def sync_timestep(self, time_step_index):
         self._current_hour = 60 / config.TIME_SCALING_FACTOR  # TODO: this calc may not be right
+        logging.debug('time step {0} = hour {1}'.format(time_step_index, self._current_hour))
 
     def info(self):
         return {
@@ -64,6 +67,7 @@ def setup_demand(csv_location):
     return [row['Litres/Hour'] for row in reader]
 
 def setup_environment(csv_directory):
+    logging.info('Setting up environment')
     ambient = setup_temperature_csv(os.path.join(csv_directory, 'AirTemperature.csv'))
     inlet = setup_temperature_csv(os.path.join(csv_directory, 'IncomingWaterUse.csv'))
     daily_demand = setup_demand(os.path.join(csv_directory, 'WaterUse.csv'))
@@ -74,4 +78,9 @@ def setup_environment(csv_directory):
     # [(demand for hour 0, ambient 0, inlet 0), (demand 1, ambient 1, inlet 1), ...]
     mapping = zip(yearly_demand, ambient, inlet)
     _environment_singleton = Environment(mapping)
+    return _environment_singleton
+
+def setup_dummy_environment(*args):
+    logging.info('Setting up dummy environment')
+    _environment_singleton = Environment([(1, 20, 20) for _ in range(365)])
     return _environment_singleton

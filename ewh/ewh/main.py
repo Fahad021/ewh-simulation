@@ -1,6 +1,8 @@
 import argparse
 import os
 import sys
+import logging
+import pprint
 
 from states import TankSize
 
@@ -33,6 +35,13 @@ def parse_args():
     parser.add_argument('--end-time-step',
         dest="end_time_step",
         type=int)
+    parser.add_argument('--log-file',
+        dest="log_file",
+        type=str)
+    parser.add_argument('--log-level',
+        dest="log_level",
+        choices=['INFO', 'DEBUG'],
+        default="DEBUG")
 
     args = parser.parse_args()
 
@@ -54,6 +63,14 @@ def parse_args():
     if args['start_time_step'] is None:
         args['start_time_step'] = 0
 
+    # set up logging
+    if args['log_file'] is None:
+        args['log_file'] = 'simulation_log.log'
+
+    log_level = getattr(logging, args['log_level'], None)
+    logging.basicConfig(filename=args['log_file'], log_level)
+
+    logging.info("Simulation Arguments: {0}".format(pprint.pformat(args)))
     return args
 
 if __name__ == '__main__':

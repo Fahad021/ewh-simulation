@@ -1,19 +1,17 @@
 import enum
 
-class OnState(enum.Enum):
+class State(enum.Enum):
+    def __str__(self):
+        return self.name
+
+class OnState(State):
     OFF = 0
     ON = 1
 
-    def __str__(self):
-        return self.name
-
-class PowerUsage(enum.Enum):
+class PowerUsage(State):
     LOW = 0
     REGULAR = 1
 
-    def __str__(self):
-        return self.name
-
-class TankSize(enum.Enum):
+class TankSize(State):
     SMALL = 180
     LARGE = 270

@@ -1,5 +1,7 @@
 import itertools
 import random
+import logging
+import pprint
 
 import environment
 import ewh
@@ -8,7 +10,7 @@ from states import TankSize
 
 class SimulationHub(object):
     def __init__(self, **kwargs):
-        self._environment = environment.setup_environment(args['csv_location'])
+        self._environment = environment.setup_environment(kwargs['csv_location'])
 
         if kwargs['tank_size'] == TankSize.SMALL:
             builder = build_small_tank_population
@@ -18,21 +20,20 @@ class SimulationHub(object):
 
         random.seed(kwargs['seed'])
 
-    def run(self, start_time_step=0, time_steps=None, subset_divider=None, subset_size=None):
+        self._time_step_range = make_range(args['start_time_step'], args['end_time_step'])
+
+    def run(self, subset_divider=None, subset_size=None):
         if subset_divider is None:
             subset_divider = lambda population, subset_size: (population, [])  # use identity function
 
-        for time_step_index in make_range(start_time_step, time_steps):
+        for time_step_index in self._time_step_range:
             self._environment.sync_timestep(time_step_index)
+            info = pprint.pformat(self._environment.info())
+            logging.info('Time Step {0}, Environment: {1}'.format(time_step_index, info))
             run_time_step(*subset_divider(self._population))
 
     def run_time_step(self, used_subset, unused_subset):
-        for c in used_subset:
-            #c.receive_command()
-            pass
-
-        for c in unused_subset:
-            c.poll()
+        pass
 
 def make_range(start, end):
     """Return a generator of the time steps to iterate over"""
