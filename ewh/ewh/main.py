@@ -3,6 +3,7 @@ import os.path
 import sys
 import logging
 import pprint
+import time
 
 from states import TankSize
 
@@ -10,8 +11,7 @@ import simulation
 import environment
 
 def main():
-    environment.setup()
-    sim = SimulationHub(parse_args())
+    sim = simulation.SimulationHub(**vars(parse_args()))
     sim.run()
 
 def parse_args():
@@ -73,6 +73,7 @@ def parse_args():
 
     log_level = getattr(logging, args.log_level, None)
     logging.basicConfig(filename=args.log_file, level=log_level)
+    logging.info("----Starting simulation at {0}----".format(time.strftime('%X %x %Z')))
 
     logging.info("Simulation Arguments: {0}".format(pprint.pformat(args)))
     return args

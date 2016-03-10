@@ -10,7 +10,7 @@ from states import TankSize
 
 class SimulationHub(object):
     def __init__(self, **kwargs):
-        self._environment = environment.setup_environment(kwargs['csv_location'], kwargs['time_scaling_factor'])
+        self._environment = environment.setup_environment(kwargs['csv_directory'], kwargs['time_scaling_factor'])
 
         if kwargs['tank_size'] == TankSize.SMALL:
             builder = build_small_tank_population

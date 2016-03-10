@@ -2,6 +2,7 @@ import csv
 import itertools
 import os
 import pprint
+import logging
 
 import config
 
@@ -18,26 +19,31 @@ class Environment(object):
 
     @property
     def current_tuple(self):
+        """(demand [L/h], ambient [deg C], inlet [deg C])"""
         return self._mapping[self._current_hour]
 
     @property
     def demand(self):
+        """Water demand (in litres per hour)"""
         return self.current_tuple[0]
 
     @property
     def ambient_temperature(self):
+        """Temperature (in degrees C) of area outside of the EWH population"""
         return self.current_tuple[1]
 
     @property
     def inlet_temperature(self):
+        """Temperature (in degrees C) of inlet water"""
         return self.current_tuple[2]
 
     @property
     def time_scaling_factor(self):
+        """Integer number of time steps that comprise exactly one hour"""
         return self._tsf
 
     def sync_timestep(self, time_step_index):
-        self._current_hour = 60 / config.TIME_SCALING_FACTOR  # TODO: this calc may not be right
+        self._current_hour = int(60 / config.TIME_SCALING_FACTOR)  # TODO: this calc may not be right
         logging.debug('time step {0} = hour {1}'.format(time_step_index, self._current_hour))
 
     def info(self):
@@ -58,17 +64,18 @@ def environment():
     return _environment_singleton
 
 def setup_temperature_csv(csv_location):
-    # normal csv_location is '../Data/AirTemperature.csv'
     with open(csv_location) as csvfile:
         reader = csv.DictReader(csvfile)
+        rows = [row['Celcius'] for row in reader]
 
-    return [row['Celcius'] for row in reader]
+    return rows
 
 def setup_demand(csv_location):
     with open(csv_location) as csvfile:
         reader = csv.DictReader(csvfile)
+        rows = [row['Litres/Hour'] for row in reader]
 
-    return [row['Litres/Hour'] for row in reader]
+    return rows
 
 def setup_environment(csv_directory, time_scaling_factor):
     logging.info('Setting up environment')
@@ -85,6 +92,8 @@ def setup_environment(csv_directory, time_scaling_factor):
     return _environment_singleton
 
 def setup_dummy_environment(*args):
+    """Create a dummy environment with a uniform demand/temperature mapping
+    for debug purposes"""
     logging.info('Setting up dummy environment')
     _environment_singleton = Environment([(1, 20, 20) for _ in range(365)])
     return _environment_singleton

@@ -36,12 +36,9 @@ class ElectricWaterHeater(object):
     def configuration(self):
         return self._config
 
-    @configuration.setter
-    def configuration(self, c):
-        self._config = c
-
     @property
     def total_time_on(self):
+        """Number of time steps the heater has been on since initialization"""
         return self._total_time_on
 
     def go_to_low_power_mode(self):
@@ -56,28 +53,12 @@ class ElectricWaterHeater(object):
     def heater_needs_to_turn_on(self):
         return (self._on_state == OnState.OFF) and (self._temperature < self._lower_limit)
 
+    def heater_is_on(self):
+        return self._on_state == OnState.ON
+
     def switch_power(self, new_state):
         logging.debug("EWH turning {0}".format(str(new_state)))
         self._on_state = new_state
-
-    def convection_losses(self, current_temperature):
-        """Calculate the amount of heat lost per hour due to the temperature
-        difference between the tank and the air around it.
-        imperial btu/hour
-        """
-        sa = self.configuration.tank_surface_area
-        resist = 1.0 / self.configuration.insulation_thermal_resistance
-        diff = current_temperature - self.environment.ambient_temperature
-        return sa * resist * diff
-
-    def demand_losses(self, current_temperature, current_demand):
-        """Calculate the amount of heat lost per hour due to the incoming cold
-        water.
-        imperial btu/hour
-        """
-        scalar = 8.3 * config.SPECIFIC_HEAT_OF_WATER
-        diff = current_temperature - self.environment.inlet_temperature
-        return scalar * current_demand * diff
 
     def new_temperature(self, last_temperature):
         g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
@@ -123,6 +104,8 @@ class ElectricWaterHeater(object):
         return d
 
 def randomize_demand(demand_in_litres):
+    """Return a randomized demand (in gallons per hour) when given a static
+    demand (in L/h)"""
     return random.uniform(0, 2) * to_gallons(demand_in_litres)
 
 def make_small_ewh(environment=None):
@@ -134,11 +117,13 @@ def make_large_ewh(environment=None):
     return ElectricWaterHeater(configuration=c, environment=environment)
 
 def to_celcius(fahrenheit):
+    """Convert degrees Fahrenheit to degrees Celcius"""
     return (fahrenheit - 32)/1.8
 
 def to_fahrenheit(celcius):
+    """Convert degrees Celcius to degrees Fahrenheit"""
     return (celcius * 1.8) + 32
 
 def to_gallons(litres):
-    # ASSUMING US GALLONS BECAUSE THE IMPERIAL SYSTEM IS STUPID
+    """Convert metric litres to US gallons"""
     return 0.264172052 * litres
