@@ -20,7 +20,7 @@ class HeaterConfiguration(object):
         self._low_power_temperature = low_power_temperature
         self._regular_power_temperature= regular_power_temperature
 
-        if tank_size == TankSize.LARGE:
+        if tank_size == TankSize.SMALL:
             # 180 liter tank
             self._tank_surface_area = 3.43062  # meters^2
             self._tank_radius = 0.30  # meters
