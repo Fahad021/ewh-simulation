@@ -25,10 +25,10 @@ class ElectricWaterHeater(object):
 
         if randomize:
             # set temperature somewhere within deadband
-            self._temperature = random.uniform(self.configuration.low_power_temperature, self.configuration.desired_temp)
+            self._temperature = random.uniform(self.configuration.low_power_temperature, self.configuration.desired_temperature)
         else:
             # set to outside temperature
-            self._temperature = self._environment.desired_temp
+            self._temperature = self._environment.ambient_temperature
 
         logging.debug("Initial {0}".format(pprint.pformat(self.info(include_config=True))))
 
@@ -48,7 +48,7 @@ class ElectricWaterHeater(object):
         self._lower_limit = self.configuration.regular_power_temperature
 
     def heater_needs_to_turn_off(self):
-        return (self._on_state == OnState.ON) and (self._temperature >= self.configuration.desired_temp)
+        return (self._on_state == OnState.ON) and (self._temperature >= self.configuration.desired_temperature)
 
     def heater_needs_to_turn_on(self):
         return (self._on_state == OnState.OFF) and (self._temperature < self._lower_limit)
@@ -73,7 +73,7 @@ class ElectricWaterHeater(object):
         inside *= r_prime
 
         result = to_fahrenheit(last_temperature) * scalar + inside * (1 - scalar)
-        return to_celcius(result)
+        return to_celsius(result)
 
     def update(self):
         last_temperature = self._temperature
@@ -108,21 +108,21 @@ def randomize_demand(demand_in_litres):
     demand (in L/h)"""
     return random.uniform(0, 2) * to_gallons(demand_in_litres)
 
-def make_small_ewh(environment=None):
+def make_small_ewh(env=None):
     c = config.HeaterConfiguration(tank_size=TankSize.SMALL)
-    return ElectricWaterHeater(configuration=c, environment=environment)
+    return ElectricWaterHeater(configuration=c, env=env)
 
-def make_large_ewh(environment=None):
+def make_large_ewh(env=None):
     c = config.HeaterConfiguration(tank_size=TankSize.LARGE)
-    return ElectricWaterHeater(configuration=c, environment=environment)
+    return ElectricWaterHeater(configuration=c, env=env)
 
-def to_celcius(fahrenheit):
-    """Convert degrees Fahrenheit to degrees Celcius"""
+def to_celsius(fahrenheit):
+    """Convert degrees Fahrenheit to degrees Celsius"""
     return (fahrenheit - 32)/1.8
 
-def to_fahrenheit(celcius):
-    """Convert degrees Celcius to degrees Fahrenheit"""
-    return (celcius * 1.8) + 32
+def to_fahrenheit(celsius):
+    """Convert degrees celsius to degrees Fahrenheit"""
+    return (celsius * 1.8) + 32
 
 def to_gallons(litres):
     """Convert metric litres to US gallons"""

@@ -16,7 +16,7 @@ class SimulationHub(object):
             builder = build_small_tank_population
         else:
             builder = build_large_tank_population
-        self._population = builder(kwargs['population_size'])
+        self._population = builder(kwargs['population_size'], self._environment)
 
         random.seed(kwargs['seed'])
 
@@ -68,8 +68,8 @@ def randomize_subset_variable_limited_size(population, max_subset_size):
         max_subset_size = len(population)
     return randomize_subset_constant_size(population, random.randint(0, max_subset_size))
 
-def build_small_tank_population(population_size):
-    return [controller.Controller(ewh.make_small_ewh()) for _ in range(population_size)]
+def build_small_tank_population(population_size, env):
+    return [controller.Controller(ewh.make_small_ewh(env=env)) for _ in range(population_size)]
 
-def build_large_tank_population(population_size):
-    return [controller.Controller(ewh.make_large_ewh()) for _ in range(population_size)]
+def build_large_tank_population(population_size, env):
+    return [controller.Controller(ewh.make_large_ewh(env=env)) for _ in range(population_size)]

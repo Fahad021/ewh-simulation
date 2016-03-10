@@ -49,9 +49,9 @@ class Environment(object):
     def info(self):
         return {
             'current_hour': self._current_hour,
-            'demand': self._demand,
-            'ambient_temperature': self._ambient_temperature,
-            'inlet_temperature': self._inlet_temperature,
+            'demand': self.demand,
+            'ambient_temperature': self.ambient_temperature,
+            'inlet_temperature': self.inlet_temperature,
             'time_scaling_factor': self._tsf,
         }
 
@@ -66,7 +66,8 @@ def environment():
 def setup_temperature_csv(csv_location):
     with open(csv_location) as csvfile:
         reader = csv.DictReader(csvfile)
-        rows = [row['Celcius'] for row in reader]
+        print(reader.fieldnames)
+        rows = [row['Celsius'] for row in reader]
 
     return rows
 
@@ -80,14 +81,14 @@ def setup_demand(csv_location):
 def setup_environment(csv_directory, time_scaling_factor):
     logging.info('Setting up environment')
     ambient = setup_temperature_csv(os.path.join(csv_directory, 'AirTemperature.csv'))
-    inlet = setup_temperature_csv(os.path.join(csv_directory, 'IncomingWaterUse.csv'))
+    inlet = setup_temperature_csv(os.path.join(csv_directory, 'IncomingWaterTemperature.csv'))
     daily_demand = setup_demand(os.path.join(csv_directory, 'WaterUse.csv'))
 
     yearly_demand = itertools.repeat(daily_demand, 365)  # copy for every day
 
     # now we want a mapping of demand/ambient/inlet for every hour
     # [(demand for hour 0, ambient 0, inlet 0), (demand 1, ambient 1, inlet 1), ...]
-    mapping = zip(yearly_demand, ambient, inlet)
+    mapping = list(zip(yearly_demand, ambient, inlet))
     _environment_singleton = Environment(mapping, time_scaling_factor)
     return _environment_singleton
 
