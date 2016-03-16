@@ -6,9 +6,6 @@ import logging
 
 import config
 
-AMBIENT_TEMP = 20  # temperature (in C) of air outside of water heater
-INLET_TEMP = 10  # temperature of water (in C) at inlet
-
 class Environment(object):
     def __init__(self, mapping, time_scaling_factor, start_hour=0):
         self._mapping = mapping
@@ -66,8 +63,7 @@ def environment():
 def setup_temperature_csv(csv_location):
     with open(csv_location) as csvfile:
         reader = csv.DictReader(csvfile)
-        print(reader.fieldnames)
-        rows = [row['Celsius'] for row in reader]
+        rows = [list(itertools.repeat(row['Celsius'], 24)) for row in reader]
 
     return rows
 
@@ -85,7 +81,6 @@ def setup_environment(csv_directory, time_scaling_factor):
     daily_demand = setup_demand(os.path.join(csv_directory, 'WaterUse.csv'))
 
     yearly_demand = itertools.repeat(daily_demand, 365)  # copy for every day
-
     # now we want a mapping of demand/ambient/inlet for every hour
     # [(demand for hour 0, ambient 0, inlet 0), (demand 1, ambient 1, inlet 1), ...]
     mapping = list(zip(yearly_demand, ambient, inlet))

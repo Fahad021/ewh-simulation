@@ -25,7 +25,7 @@ class SimulationHub(object):
 
     def run(self, subset_divider=None, subset_size=None):
         if subset_divider is None:
-            subset_divider = lambda population, subset_size: (population, [])  # use identity function
+            subset_divider = lambda population: (population, [])  # use identity function
 
         for time_step_index in self._time_step_range:
             self._environment.sync_timestep(time_step_index)

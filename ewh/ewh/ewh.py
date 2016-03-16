@@ -62,14 +62,14 @@ class ElectricWaterHeater(object):
 
     def new_temperature(self, last_temperature):
         g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
-        b = randomize_demand(self.environment.demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
+        b = randomize_demand(self._environment.demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         r_prime = 1.0 / (g + b)
-        scalar = math.exp(-self.environment.time_scaling_factor/r_prime)
+        scalar = math.exp(-self._environment.time_scaling_factor/r_prime)
 
-        ambient = to_fahrenheit(self.environment.ambient_temperature)
-        inlet = to_fahrenheit(self.environment.inlet_temperature)
+        ambient = to_fahrenheit(self._environment.ambient_temperature)
+        inlet = to_fahrenheit(self._environment.inlet_temperature)
 
-        inside = g * ambient + b * self.environment.inlet_temperature + self.configuration.power_input
+        inside = g * ambient + b * self._environment.inlet_temperature + self.configuration.power_input
         inside *= r_prime
 
         result = to_fahrenheit(last_temperature) * scalar + inside * (1 - scalar)

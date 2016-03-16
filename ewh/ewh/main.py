@@ -40,11 +40,15 @@ def parse_args():
         type=int)
     parser.add_argument('--log-file',
         dest="log_file",
+        default='simulation_log.log',
         type=str)
     parser.add_argument('--log-level',
         dest="log_level",
         choices=['INFO', 'DEBUG'],
         default="DEBUG")
+    parser.add_argument('--reset-log',
+        dest="reset_log",
+        action="store_true")
     parser.add_argument('--hub-interval',
         help="time steps per hub recalculate/message delivery",
         dest="hub_interval",
@@ -67,9 +71,10 @@ def parse_args():
     else:
         args.tank_size = TankSize.LARGE
 
-    # set up logging
-    if args.log_file is None:
-        args.log_file = 'simulation_log.log'
+    if args.reset_log:
+        # clear the log file
+        with open(args.log_file, 'w'):
+            pass
 
     log_level = getattr(logging, args.log_level, None)
     logging.basicConfig(filename=args.log_file, level=log_level)
