@@ -10,13 +10,13 @@ from states import TankSize
 
 class SimulationHub(object):
     def __init__(self, **kwargs):
-        self._environment = environment.setup_environment(kwargs['csv_location'], kwargs['time_scaling_factor'])
+        self._environment = environment.setup_environment(kwargs['csv_directory'], kwargs['time_scaling_factor'])
 
         if kwargs['tank_size'] == TankSize.SMALL:
             builder = build_small_tank_population
         else:
             builder = build_large_tank_population
-        self._population = builder(kwargs['population_size'])
+        self._population = builder(kwargs['population_size'], self._environment)
 
         random.seed(kwargs['seed'])
 
@@ -25,7 +25,7 @@ class SimulationHub(object):
 
     def run(self, subset_divider=None, subset_size=None):
         if subset_divider is None:
-            subset_divider = lambda population, subset_size: (population, [])  # use identity function
+            subset_divider = lambda population: (population, [])  # use identity function
 
         for time_step_index in self._time_step_range:
             self._environment.sync_timestep(time_step_index)
@@ -68,8 +68,8 @@ def randomize_subset_variable_limited_size(population, max_subset_size):
         max_subset_size = len(population)
     return randomize_subset_constant_size(population, random.randint(0, max_subset_size))
 
-def build_small_tank_population(population_size):
-    return [controller.Controller(ewh.make_small_ewh()) for _ in range(population_size)]
+def build_small_tank_population(population_size, env):
+    return [controller.Controller(ewh.make_small_ewh(env=env)) for _ in range(population_size)]
 
-def build_large_tank_population(population_size):
-    return [controller.Controller(ewh.make_large_ewh()) for _ in range(population_size)]
+def build_large_tank_population(population_size, env):
+    return [controller.Controller(ewh.make_large_ewh(env=env)) for _ in range(population_size)]

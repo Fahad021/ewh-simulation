@@ -1,8 +1,9 @@
 import argparse
-import os
+import os.path
 import sys
 import logging
 import pprint
+import time
 
 from states import TankSize
 
@@ -10,8 +11,7 @@ import simulation
 import environment
 
 def main():
-    environment.setup()
-    sim = SimulationHub(parse_args())
+    sim = simulation.SimulationHub(**vars(parse_args()))
     sim.run()
 
 def parse_args():
@@ -40,13 +40,17 @@ def parse_args():
         type=int)
     parser.add_argument('--log-file',
         dest="log_file",
+        default='simulation_log.log',
         type=str)
     parser.add_argument('--log-level',
         dest="log_level",
         choices=['INFO', 'DEBUG'],
         default="DEBUG")
+    parser.add_argument('--reset-log',
+        dest="reset_log",
+        action="store_true")
     parser.add_argument('--hub-interval',
-        help="time steps per hub recalculate/message delivery"
+        help="time steps per hub recalculate/message delivery",
         dest="hub_interval",
         default=5,
         type=int)
@@ -58,21 +62,23 @@ def parse_args():
 
     args = parser.parse_args()
 
-    if not os.path.isdir(csv_directory):
-        parser.error("Directory '{0}' does not exist.".format(csv_directory))
+    if not os.path.isdir(args.csv_directory):
+        parser.error("Directory '{0}' does not exist.".format(args.csv_directory))
         sys.exit(1)
 
-    if args['tank_size'] == 180:
-        args['tank_size'] = TankSize.SMALL
+    if args.tank_size == 180:
+        args.tank_size = TankSize.SMALL
     else:
-        args['tank_size'] = TankSize.LARGE
+        args.tank_size = TankSize.LARGE
 
-    # set up logging
-    if args['log_file'] is None:
-        args['log_file'] = 'simulation_log.log'
+    if args.reset_log:
+        # clear the log file
+        with open(args.log_file, 'w'):
+            pass
 
-    log_level = getattr(logging, args['log_level'], None)
-    logging.basicConfig(filename=args['log_file'], log_level)
+    log_level = getattr(logging, args.log_level, None)
+    logging.basicConfig(filename=args.log_file, level=log_level)
+    logging.info("----Starting simulation at {0}----".format(time.strftime('%X %x %Z')))
 
     logging.info("Simulation Arguments: {0}".format(pprint.pformat(args)))
     return args
