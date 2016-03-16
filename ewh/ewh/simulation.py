@@ -69,7 +69,7 @@ def randomize_subset_variable_limited_size(population, max_subset_size):
     return randomize_subset_constant_size(population, random.randint(0, max_subset_size))
 
 def build_small_tank_population(population_size, env):
-    return [controller.Controller(ewh.make_small_ewh(env=env)) for _ in range(population_size)]
+    return [controller.make_controller_and_heater(TankSize.SMALL, env=env, cid=i) for i in range(population_size)]
 
 def build_large_tank_population(population_size, env):
-    return [controller.Controller(ewh.make_large_ewh(env=env)) for _ in range(population_size)]
+    return [controller.make_controller_and_heater(TankSize.LARGE, env=env, cid=i) for i in range(population_size)]

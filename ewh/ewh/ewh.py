@@ -108,12 +108,8 @@ def randomize_demand(demand_in_litres):
     demand (in L/h)"""
     return random.uniform(0, 2) * to_gallons(demand_in_litres)
 
-def make_small_ewh(env=None):
-    c = config.HeaterConfiguration(tank_size=TankSize.SMALL)
-    return ElectricWaterHeater(configuration=c, env=env)
-
-def make_large_ewh(env=None):
-    c = config.HeaterConfiguration(tank_size=TankSize.LARGE)
+def make_heater(size, env=None):
+    c = config.HeaterConfiguration(tank_size=size)
     return ElectricWaterHeater(configuration=c, env=env)
 
 def to_celsius(fahrenheit):
