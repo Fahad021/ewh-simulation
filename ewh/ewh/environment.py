@@ -64,14 +64,12 @@ def setup_temperature_csv(csv_location):
     with open(csv_location) as csvfile:
         reader = csv.DictReader(csvfile)
         rows = [list(itertools.repeat(row['Celsius'], 24)) for row in reader]
-
     return rows
 
 def setup_demand(csv_location):
     with open(csv_location) as csvfile:
         reader = csv.DictReader(csvfile)
         rows = [row['Litres/Hour'] for row in reader]
-
     return rows
 
 def setup_environment(csv_directory, time_scaling_factor):
@@ -80,10 +78,10 @@ def setup_environment(csv_directory, time_scaling_factor):
     inlet = setup_temperature_csv(os.path.join(csv_directory, 'IncomingWaterTemperature.csv'))
     daily_demand = setup_demand(os.path.join(csv_directory, 'WaterUse.csv'))
 
-    yearly_demand = itertools.repeat(daily_demand, 365)  # copy for every day
+    yearly_demand = list(itertools.repeat(daily_demand, 365))  # copy for every day
     # now we want a mapping of demand/ambient/inlet for every hour
     # [(demand for hour 0, ambient 0, inlet 0), (demand 1, ambient 1, inlet 1), ...]
-    mapping = list(zip(yearly_demand, ambient, inlet))
+    mapping = env_zipper(yearly_demand, ambient, inlet)
     _environment_singleton = Environment(mapping, time_scaling_factor)
     return _environment_singleton
 
@@ -93,3 +91,20 @@ def setup_dummy_environment(*args):
     logging.info('Setting up dummy environment')
     _environment_singleton = Environment([(1, 20, 20) for _ in range(365)])
     return _environment_singleton
+
+def zipper(*args):
+    return [[arg[index] for arg in args] for index in range(len(args[0]))]
+
+def env_zipper(demand, ambient, inlet):
+    mapping = []
+    for day_index in range(365):
+        daily_demand = demand[day_index]
+        daily_ambient = ambient[day_index]
+        daily_inlet = inlet[day_index]
+        for hour_index in range(24):
+            mapping.append([daily_demand[hour_index], daily_ambient[hour_index], daily_inlet[hour_index]])
+
+    return mapping
+
+if __name__ == '__main__':
+    e = setup_environment('../Data', 60)
