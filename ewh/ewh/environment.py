@@ -2,7 +2,7 @@ import csv
 import itertools
 import os
 import pprint
-import logging
+import math
 
 import config
 
@@ -11,8 +11,6 @@ class Environment(object):
         self._mapping = mapping
         self._current_hour = start_hour
         self._tsf = time_scaling_factor
-        logging.debug('Set up environment with mapping {0}'.format(pprint.pformat(mapping)))
-        logging.debug('Time scaling factor = {0} steps per hour'.format(time_scaling_factor))
 
     @property
     def current_tuple(self):
@@ -40,8 +38,7 @@ class Environment(object):
         return self._tsf
 
     def sync_timestep(self, time_step_index):
-        self._current_hour = int(60 / config.TIME_SCALING_FACTOR)  # TODO: this calc may not be right
-        logging.debug('time step {0} = hour {1}'.format(time_step_index, self._current_hour))
+        self._current_hour = math.floor(time_step_index / config.TIME_SCALING_FACTOR)
 
     def info(self):
         return {
@@ -63,17 +60,16 @@ def environment():
 def setup_temperature_csv(csv_location):
     with open(csv_location) as csvfile:
         reader = csv.DictReader(csvfile)
-        rows = [list(itertools.repeat(row['Celsius'], 24)) for row in reader]
+        rows = [list(itertools.repeat(float(row['Celsius']), 24)) for row in reader]
     return rows
 
 def setup_demand(csv_location):
     with open(csv_location) as csvfile:
         reader = csv.DictReader(csvfile)
-        rows = [row['Litres/Hour'] for row in reader]
+        rows = [float(row['Litres/Hour']) for row in reader]
     return rows
 
 def setup_environment(csv_directory, time_scaling_factor):
-    logging.info('Setting up environment')
     ambient = setup_temperature_csv(os.path.join(csv_directory, 'AirTemperature.csv'))
     inlet = setup_temperature_csv(os.path.join(csv_directory, 'IncomingWaterTemperature.csv'))
     daily_demand = setup_demand(os.path.join(csv_directory, 'WaterUse.csv'))
@@ -88,8 +84,7 @@ def setup_environment(csv_directory, time_scaling_factor):
 def setup_dummy_environment(*args):
     """Create a dummy environment with a uniform demand/temperature mapping
     for debug purposes"""
-    logging.info('Setting up dummy environment')
-    _environment_singleton = Environment([(1, 20, 20) for _ in range(365)])
+    _environment_singleton = Environment([(1, 20, 20) for _ in range(24*365)])
     return _environment_singleton
 
 def zipper(*args):

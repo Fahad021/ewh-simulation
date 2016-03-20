@@ -27,8 +27,8 @@ class ElectricWaterHeater(object):
             # set temperature somewhere within deadband
             self._temperature = random.uniform(self.configuration.low_power_temperature, self.configuration.desired_temperature)
         else:
-            # set to outside temperature
-            self._temperature = self._environment.ambient_temperature
+            # set to desired temperature
+            self._temperature = self.configuration.desired_temperature
 
         logging.debug("Initial {0}".format(pprint.pformat(self.info(include_config=True))))
 
@@ -61,15 +61,21 @@ class ElectricWaterHeater(object):
         self._on_state = new_state
 
     def new_temperature(self, last_temperature):
+        # G = surface area / thermal resistance of tank insulation
         g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
+        # B(t) = demand * 8.3 * (specific heat of water)
         b = randomize_demand(self._environment.demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
+        # C = equivalent thermal mass of tank
+        # C = 8.3 * (number of gallons) * (specific heat of water)
+        c = 8.3 * self.configuration.tank_gallons * config.SPECIFIC_HEAT_OF_WATER
         r_prime = 1.0 / (g + b)
-        scalar = math.exp(-self._environment.time_scaling_factor/r_prime)
+        # scalar = e^((-1/R'C)(t - tau)) = e^(-tsf/R'C)
+        scalar = math.exp(-self._environment.time_scaling_factor/(r_prime * c))
 
         ambient = to_fahrenheit(self._environment.ambient_temperature)
         inlet = to_fahrenheit(self._environment.inlet_temperature)
 
-        inside = g * ambient + b * self._environment.inlet_temperature + self.configuration.power_input
+        inside = g * ambient + b * inlet + self.configuration.power_input
         inside *= r_prime
 
         result = to_fahrenheit(last_temperature) * scalar + inside * (1 - scalar)

@@ -26,12 +26,14 @@ class HeaterConfiguration(object):
             self._tank_radius = 0.30  # meters
             self._tank_height = 1.52
             self._heating_element_rating = 4.2  # kW
+            self._tank_gallons = 180  # litres
         else:
             # 270 liter tank
             self._tank_surface_area = 2.69172
             self._tank_radius = 0.28
             self._tank_height = 1.25
             self._heating_element_rating = 2.8
+            self._tank_gallons = 270
 
     def __eq__(self, given_configuration):
         return self.info() == given_configuration.info()
@@ -45,6 +47,7 @@ class HeaterConfiguration(object):
             'tank_radius': self.tank_radius,
             'tank_height': self.tank_height,
             'insulation_thermal_resistance': self.insulation_thermal_resistance,
+            'tank_gallons': self.tank_gallons,
         }
 
     @property
@@ -90,3 +93,7 @@ class HeaterConfiguration(object):
     def power_input(self):
         """Power input to the tank in btu/hour"""
         return 3412.1 * self._heating_element_rating
+
+    @property
+    def tank_gallons(self):
+        return self._tank_gallons

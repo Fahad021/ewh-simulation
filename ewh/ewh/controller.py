@@ -7,7 +7,7 @@ import random
 import uuid
 
 class Controller(object):
-    def __init__(self, heater, cid=cid, randomize=False):
+    def __init__(self, heater, cid=None, randomize=False):
         self._usage_state_changes = 0
         self._commands_received = 0
         self._ewh = heater
@@ -62,7 +62,7 @@ class Controller(object):
 
         return d
 
-def make_controller_and_heater(tank_size, env=None, cid=None, randomize=True):
+def make_controller_and_heater(tank_size, env=None, cid=None, randomize=False):
     if cid is None:
         cid = uuid.uuid1()  # "random" identifier
 
