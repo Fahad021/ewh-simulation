@@ -58,7 +58,7 @@ class ElectricWaterHeater(object):
         return self._on_state == OnState.ON
 
     def switch_power(self, new_state):
-        logging.debug("EWH turning {0}".format(str(new_state)))
+        logging.debug("EWH_{0} turning {1}".format(self._hid, str(new_state)))
         self._on_state = new_state
 
     def new_temperature(self, last_temperature):
@@ -76,7 +76,10 @@ class ElectricWaterHeater(object):
         ambient = to_fahrenheit(self._environment.ambient_temperature)
         inlet = to_fahrenheit(self._environment.inlet_temperature)
 
-        inside = g * ambient + b * inlet + self.configuration.power_input
+        # Q(t) is nonzero if heating element in on, else zero
+        q = self.configuration.power_input if self.heater_is_on() else 0.0
+
+        inside = g * ambient + b * inlet + q
         inside *= r_prime
 
         result = to_fahrenheit(last_temperature) * scalar + inside * (1 - scalar)
