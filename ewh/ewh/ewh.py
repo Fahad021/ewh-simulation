@@ -9,7 +9,7 @@ import pprint
 import random
 
 class ElectricWaterHeater(object):
-    def __init__(self, randomize=False, state=OnState.OFF, configuration=None, env=None):
+    def __init__(self, randomize=False, state=OnState.OFF, configuration=None, env=None, hid=None):
         self._on_state = state
 
         if configuration is None:
@@ -19,6 +19,7 @@ class ElectricWaterHeater(object):
 
         self._config = configuration
         self._environment = env
+        self._hid = hid
 
         self._total_time_on = 0
         self._lower_limit = self.configuration.regular_power_temperature
@@ -85,7 +86,7 @@ class ElectricWaterHeater(object):
         last_temperature = self._temperature
         self._temperature = self.new_temperature(last_temperature)
 
-        logging.debug('EWH temperature {0} to {1}'.format(last_temperature, self._temperature))
+        logging.debug('EWH_{0}: {1:.2f}->{2:.2f}'.format(self._hid, last_temperature, self._temperature))
 
         if self.heater_is_on():
             self._total_time_on += 1
@@ -102,6 +103,7 @@ class ElectricWaterHeater(object):
             'current_lower_limit': self._lower_limit,
             'total_time_on': self._total_time_on,
             'current_state': str(self._on_state),
+            'id': self._hid,
         }
 
         if include_config:
@@ -114,9 +116,9 @@ def randomize_demand(demand_in_litres):
     demand (in L/h)"""
     return random.uniform(0, 2) * to_gallons(demand_in_litres)
 
-def make_heater(size, env=None):
+def make_heater(size, env=None, hid=None):
     c = config.HeaterConfiguration(tank_size=size)
-    return ElectricWaterHeater(configuration=c, env=env)
+    return ElectricWaterHeater(configuration=c, env=env, hid=hid)
 
 def to_celsius(fahrenheit):
     """Convert degrees Fahrenheit to degrees Celsius"""

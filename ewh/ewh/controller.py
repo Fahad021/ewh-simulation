@@ -66,5 +66,5 @@ def make_controller_and_heater(tank_size, env=None, cid=None, randomize=False):
     if cid is None:
         cid = uuid.uuid1()  # "random" identifier
 
-    heater = make_heater(tank_size, env=env)
+    heater = make_heater(tank_size, env=env, hid=cid)
     return Controller(heater, randomize=randomize, cid=cid)
