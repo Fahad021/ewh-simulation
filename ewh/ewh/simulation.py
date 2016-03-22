@@ -23,23 +23,31 @@ class SimulationHub(object):
         self._time_step_range = make_range(kwargs['start_time_step'], kwargs['end_time_step'])
         self._hub_interval = kwargs['hub_interval']
 
-    def run(self, subset_divider=None, subset_size=None):
+        self._output_dir = None if kwargs['suppress_output'] else kwargs['output_directory']
+
+    def run(self, subset_divider=None, subset_size=None, output_csv=True):
         if subset_divider is None:
             subset_divider = lambda population: (population, [])  # use identity function
 
-        for time_step_index in self._time_step_range:
-            self._environment.sync_timestep(time_step_index)
-            info = pprint.pformat(self._environment.info())
-            logging.info('Time Step {0}, Environment: {1}'.format(time_step_index, info))
+        try:
+            for time_step_index in self._time_step_range:
+                self._environment.sync_timestep(time_step_index)
+                info = pprint.pformat(self._environment.info())
+                logging.info('Time Step {0}, Environment:\n{1}'.format(time_step_index, info))
 
-            if (time_step_index % self._hub_interval) == 0:
-                # calc and send some messages
-                logging.info('Hub step')
-                self.hub_step(*subset_divider(self._population))
-            else:
-                # hub does nothing this step - just update temperatures in ewhs
-                logging.info('Non-hub step')
-                self.poll_population()
+                if (time_step_index % self._hub_interval) == 0:
+                    # calc and send some messages
+                    logging.info('Hub step')
+                    self.hub_step(*subset_divider(self._population))
+                else:
+                    # hub does nothing this step - just update temperatures in ewhs
+                    logging.info('Non-hub step')
+                    self.poll_population()
+        except KeyboardInterrupt:
+            # TODO: outgoing logging & writing to csv
+            pass
+        finally:
+            pass
 
     def hub_step(self, used_subset, unused_subset):
         pass

@@ -65,7 +65,7 @@ class ElectricWaterHeater(object):
         # G = surface area / thermal resistance of tank insulation
         g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
         # B(t) = demand * 8.3 * (specific heat of water)
-        b = randomize_demand(self._environment.demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
+        b = self._current_demand * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         # C = equivalent thermal mass of tank
         # C = 8.3 * (number of gallons) * (specific heat of water)
         c = 8.3 * self.configuration.tank_gallons * config.SPECIFIC_HEAT_OF_WATER
@@ -87,9 +87,9 @@ class ElectricWaterHeater(object):
 
     def update(self):
         last_temperature = self._temperature
+        self._current_demand = randomize_demand(self._environment.demand)
         self._temperature = self.new_temperature(last_temperature)
-
-        logging.debug('EWH_{0}: {1:.2f}->{2:.2f}'.format(self._hid, last_temperature, self._temperature))
+        logging.debug('EWH_{0}: demand {1}, temperature {2:.2f}->{3:.2f}'.format(self._hid, self._current_demand, last_temperature, self._temperature))
 
         if self.heater_is_on():
             self._total_time_on += 1
@@ -104,6 +104,7 @@ class ElectricWaterHeater(object):
         d = {
             'current_temperature': self._temperature,
             'current_lower_limit': self._lower_limit,
+            'current_demand': self._current_demand,
             'total_time_on': self._total_time_on,
             'current_state': str(self._on_state),
             'id': self._hid,
@@ -113,6 +114,15 @@ class ElectricWaterHeater(object):
             d['configuration'] = self.configuration.info()
 
         return d
+
+    def data_output(self):
+        return {
+            'temperature': float(self._temperature),
+            'on_state': 1 if self.heater_is_on() else 0,
+            'demand': float(self._current_demand),
+            'inlet': float(self._environment.inlet_temperature),
+            'ambient': float(self._environment.ambient_temperature),
+        }
 
 def randomize_demand(demand_in_litres):
     """Return a randomized demand (in gallons per hour) when given a static

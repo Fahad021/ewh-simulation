@@ -1,9 +1,10 @@
 import argparse
-import os.path
+from os import path, mkdir
 import sys
 import logging
 import pprint
 import time
+import uuid
 
 from states import TankSize
 
@@ -17,30 +18,35 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", help="rng seed", type=int)
-    parser.add_argument("--csv",
+    parser.add_argument("--input-csv",
         dest="csv_directory",
         help="directory containing input csv data files",
         metavar="DIRECTORY",
         default="../Data/")
     parser.add_argument("--tank-size",
-        help="heater tank size in liters",
+        help="heater tank size in litres",
+        metavar="TANK_SIZE_IN_LITRES",
         type=int,
         dest="tank_size")
     parser.add_argument("--population-size",
         help="number of heaters in population",
         dest="population_size",
-        default=1000,
+        metavar="NUM_HEATERS",
+        default=3,
         type=int)
     parser.add_argument("--start-time-step",
         dest="start_time_step",
+        metavar="START",
         default=0,
         type=int)
     parser.add_argument('--end-time-step',
+        metavar="END",
         dest="end_time_step",
         type=int)
     parser.add_argument('--log-file',
         dest="log_file",
         default='simulation_log.log',
+        metavar="OUTPUT_LOG",
         type=str)
     parser.add_argument('--log-level',
         dest="log_level",
@@ -52,17 +58,29 @@ def parse_args():
     parser.add_argument('--hub-interval',
         help="time steps per hub recalculate/message delivery",
         dest="hub_interval",
+        metavar="HUB_INTERVAL",
         default=5,
         type=int)
     parser.add_argument('--scaling-factor',
         help="time steps per hour",
         default=60,  # once per minute,
         dest="time_scaling_factor",
+        metavar="TSF",
         type=int)
+    parser.add_argument('--suppress-output',
+        help="don't output to csv on exit",
+        dest="suppress_output",
+        action="store_true")
+    parser.add_argument('--output-directory',
+        dest="output_directory",
+        help="name of csv output directory",
+        type=str,
+        metavar="DIR_NAME",
+    )
 
     args = parser.parse_args()
 
-    if not os.path.isdir(args.csv_directory):
+    if not path.isdir(args.csv_directory):
         parser.error("Directory '{0}' does not exist.".format(args.csv_directory))
         sys.exit(1)
 
@@ -79,9 +97,22 @@ def parse_args():
     log_level = getattr(logging, args.log_level, None)
     logging.basicConfig(filename=args.log_file, level=log_level)
     logging.info("----Starting simulation at {0}----".format(time.strftime('%X %x %Z')))
-
     logging.info("Simulation Arguments: {0}".format(pprint.pformat(args)))
+
+    if not args.suppress_output:
+        if args.output_directory is None:
+            args.output_directory = "{0}_{1}".format(time.strftime("%Y%m%d-%H%M%S"), uuid.uuid1())
+        try:
+            os.mkdir(args.output_directory)
+        except OSError:
+            pass  # OK if already exists
+
     return args
+
+def setup_output_directory(location=None):
+
+
+
 
 if __name__ == '__main__':
     main()
