@@ -46,6 +46,7 @@ def parse_args():
     parser.add_argument('--log-file',
         dest="log_file",
         default='simulation_log.log',
+        help="name of output log file",
         metavar="OUTPUT_LOG",
         type=str)
     parser.add_argument('--log-level',
@@ -68,7 +69,7 @@ def parse_args():
         metavar="TSF",
         type=int)
     parser.add_argument('--suppress-output',
-        help="don't output to csv on exit",
+        help="don't output to csv on exit, useful when debugging",
         dest="suppress_output",
         action="store_true")
     parser.add_argument('--output-directory',
@@ -110,7 +111,7 @@ def parse_args():
     return args
 
 def setup_output_directory(location=None):
-
+    pass
 
 
 
