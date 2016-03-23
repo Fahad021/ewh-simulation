@@ -2,6 +2,8 @@ import itertools
 import random
 import logging
 import pprint
+import csv
+import os.path
 
 import environment
 import ewh
@@ -24,6 +26,7 @@ class SimulationHub(object):
         self._hub_interval = kwargs['hub_interval']
 
         self._output_dir = None if kwargs['suppress_output'] else kwargs['output_directory']
+        self._population_mapping = []
 
     def run(self, subset_divider=None, subset_size=None, output_csv=True):
         if subset_divider is None:
@@ -44,17 +47,39 @@ class SimulationHub(object):
                     logging.info('Non-hub step')
                     self.poll_population()
         except KeyboardInterrupt:
-            # TODO: outgoing logging & writing to csv
-            pass
+            logging.info('Simulation Interrupted')
+            pass  # don't throw stack trace, just write to csv and finish up
         finally:
-            pass
+            if self._output_dir is not None:
+                logging.info('Outputting ')
+                output_population_to_csv(self._population_mapping, self._output_dir)
 
     def hub_step(self, used_subset, unused_subset):
         pass
 
     def poll_population(self):
+        all_temps = []
+        total_on = 0
+        total_low = 0
         for c in self._population:
+            # update ewh temps and states
             c.poll()
+            # now collect some data on the population
+            data = c.data_output()
+            all_temps.append(data['temperature'])
+            total_on += data['on_state']
+            total_low += data['usage_state']
+
+        self._population_mapping.append({
+            'temperature': sum(all_temps) / len(all_temps),  # average temperature
+            'total_on': total_on,
+            'total_low': total_low,
+            'inlet': self._environment.inlet_temperature,
+            'ambient': self._environment.ambient_temperature,
+            'demand': self._environment.demand,
+        })
+
+
 
 def make_range(start, end):
     """Return a generator of the time steps to iterate over"""
@@ -81,3 +106,12 @@ def build_small_tank_population(population_size, env):
 
 def build_large_tank_population(population_size, env):
     return [controller.make_controller_and_heater(TankSize.LARGE, env=env, cid=i) for i in range(population_size)]
+
+def output_population_to_csv(mapping, csv_directory):
+    fieldnames = ('time_step', 'temperature', 'total_on', 'total_low', 'inlet', 'ambient', 'demand')
+    location = os.path.join(csv_directory, 'population.csv')
+    with open(location, 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for time_step_index, data in enumerate(mapping):
+            writer.writerow(dict({'time_step': time_step_index}, **data))

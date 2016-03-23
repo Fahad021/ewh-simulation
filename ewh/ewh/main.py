@@ -37,11 +37,12 @@ def parse_args():
     parser.add_argument("--start-time-step",
         dest="start_time_step",
         metavar="START",
-        default=0,
+        default=0,  # start at 00:00 on January 1st
         type=int)
     parser.add_argument('--end-time-step',
         metavar="END",
         dest="end_time_step",
+        default=1440,  # run for one day
         type=int)
     parser.add_argument('--log-file',
         dest="log_file",
@@ -102,18 +103,13 @@ def parse_args():
 
     if not args.suppress_output:
         if args.output_directory is None:
-            args.output_directory = "{0}_{1}".format(time.strftime("%Y%m%d-%H%M%S"), uuid.uuid1())
+            args.output_directory = "{0}".format(time.strftime("%Y%m%d-%H%M%S"))
         try:
-            os.mkdir(args.output_directory)
+            mkdir(args.output_directory)
         except OSError:
             pass  # OK if already exists
 
     return args
-
-def setup_output_directory(location=None):
-    pass
-
-
 
 if __name__ == '__main__':
     main()

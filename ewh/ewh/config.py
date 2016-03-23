@@ -25,14 +25,14 @@ class HeaterConfiguration(object):
             self._tank_surface_area = 3.43062  # meters^2
             self._tank_radius = 0.30  # meters
             self._tank_height = 1.52
-            self._heating_element_rating = 4.2  # kW
+            self._heating_element_rating = 2.8  # kW
             self._tank_gallons = 180  # litres
         else:
             # 270 liter tank
             self._tank_surface_area = 2.69172
             self._tank_radius = 0.28
             self._tank_height = 1.25
-            self._heating_element_rating = 2.8
+            self._heating_element_rating = 4.2
             self._tank_gallons = 270
 
     def __eq__(self, given_configuration):

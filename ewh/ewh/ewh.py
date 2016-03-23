@@ -22,6 +22,7 @@ class ElectricWaterHeater(object):
         self._hid = hid
 
         self._total_time_on = 0
+        self._current_demand = self._environment.demand
         self._lower_limit = self.configuration.regular_power_temperature
 
         if randomize:
