@@ -49,12 +49,12 @@ class SimulationHub(object):
 
         if (time_step_index % self._hub_interval) == 0:
             # calc and send some messages
-            logging.info('Hub step')
+            logging.info('Hub{0}'.format(' - PEAK PERIOD' if self._environment.is_in_peak_period() else ''))
             #self.hub_step(*subset_divider(self._population))
             self.poll_population()
         else:
             # hub does nothing this step - just update temperatures in ewhs
-            logging.info('Non-hub step')
+            logging.info('Non-hub')
             self.poll_population()
 
     def hub_step(self, used_subset, unused_subset):
