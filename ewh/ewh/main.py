@@ -106,10 +106,18 @@ def parse_args():
             args.output_directory = "{0}".format(time.strftime("%Y%m%d-%H%M%S"))
         try:
             mkdir(args.output_directory)
+            output_simulation_info(args.output_directory, args)
         except OSError:
             pass  # OK if already exists
 
     return args
+
+def output_simulation_info(directory, args):
+    filename = path.join(directory, 'info.txt')
+    with open(filename, 'w') as f:
+        f.write(str('Time Started: {0}\n'.format(time.strftime('%X %x %Z'))))
+        for arg_name, arg_value in vars(args).items():
+            f.write('{0}: {1}\n'.format(arg_name, str(arg_value)))
 
 if __name__ == '__main__':
     main()
