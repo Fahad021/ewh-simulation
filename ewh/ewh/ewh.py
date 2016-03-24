@@ -71,8 +71,8 @@ class ElectricWaterHeater(object):
         # C = 8.3 * (number of gallons) * (specific heat of water)
         c = 8.3 * self.configuration.tank_gallons * config.SPECIFIC_HEAT_OF_WATER
         r_prime = 1.0 / (g + b)
-        # scalar = e^((-1/R'C)(t - tau)) = e^(-tsf/R'C)
-        scalar = math.exp(-self._environment.time_scaling_factor/(r_prime * c))
+        # scalar = e^((-1/R'C)(t - tau)) = e^(-1/R'C(TSF))
+        scalar = math.exp(-1/(r_prime * c * self._environment.time_scaling_factor))
 
         ambient = to_fahrenheit(self._environment.ambient_temperature)
         inlet = to_fahrenheit(self._environment.inlet_temperature)
@@ -90,7 +90,7 @@ class ElectricWaterHeater(object):
         last_temperature = self._temperature
         self._current_demand = randomize_demand(self._environment.demand)
         self._temperature = self.new_temperature(last_temperature)
-        logging.debug('EWH_{0}: demand {1}, temperature {2:.2f}->{3:.2f}'.format(self._hid, self._current_demand, last_temperature, self._temperature))
+        logging.debug('EWH_{0}: demand {1:.2f}, temperature {2:.2f}->{3:.2f}'.format(self._hid, self._current_demand, last_temperature, self._temperature))
 
         if self.heater_is_on():
             self._total_time_on += 1
@@ -139,7 +139,7 @@ def to_celsius(fahrenheit):
     return (fahrenheit - 32)/1.8
 
 def to_fahrenheit(celsius):
-    """Convert degrees celsius to degrees Fahrenheit"""
+    """Convert degrees Celsius to degrees Fahrenheit"""
     return (celsius * 1.8) + 32
 
 def to_gallons(litres):

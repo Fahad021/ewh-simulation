@@ -3,11 +3,8 @@ from states import TankSize
 DESIRED_TEMPERATURE = 75  # in celcius
 REGULAR_POWER_LOWER_LIMIT = 70
 LOW_POWER_LOWER_LIMIT = 65 # absolute lowest temp (in C) before EWH must turn itself back on
-INITIAL_TANK_TEMPERATURE = 20
-ACTION_POWER_CONSUMPTION = 1  # power usage when switching state
 INSULATION_THERMAL_RESISTANCE = 1
 
-TIME_SCALING_FACTOR = 1
 SPECIFIC_HEAT_OF_WATER = 1
 
 class HeaterConfiguration(object):

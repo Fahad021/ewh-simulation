@@ -34,25 +34,28 @@ class SimulationHub(object):
 
         try:
             for time_step_index in self._time_step_range:
-                self._environment.sync_timestep(time_step_index)
-                info = pprint.pformat(self._environment.info())
-                logging.info('Time Step {0}, Environment:\n{1}'.format(time_step_index, info))
-
-                if (time_step_index % self._hub_interval) == 0:
-                    # calc and send some messages
-                    logging.info('Hub step')
-                    self.hub_step(*subset_divider(self._population))
-                else:
-                    # hub does nothing this step - just update temperatures in ewhs
-                    logging.info('Non-hub step')
-                    self.poll_population()
+                self.do_timestep(time_step_index, subset_divider)
         except KeyboardInterrupt:
             logging.info('Simulation Interrupted')
             pass  # don't throw stack trace, just write to csv and finish up
         finally:
             if self._output_dir is not None:
-                logging.info('Outputting ')
+                logging.info('Writing to CSV at {0}'.format(self._output_dir))
                 output_population_to_csv(self._population_mapping, self._output_dir)
+
+    def do_timestep(self, time_step_index, subset_divider):
+        self._environment.sync_timestep(time_step_index)
+        logging.info('Time Step {0} (total hour {1}) (day {2} hour {3})'.format(time_step_index, self._environment.current_hour, *self._environment.time_tuple))
+
+        if (time_step_index % self._hub_interval) == 0:
+            # calc and send some messages
+            logging.info('Hub step')
+            #self.hub_step(*subset_divider(self._population))
+            self.poll_population()
+        else:
+            # hub does nothing this step - just update temperatures in ewhs
+            logging.info('Non-hub step')
+            self.poll_population()
 
     def hub_step(self, used_subset, unused_subset):
         pass
@@ -71,7 +74,7 @@ class SimulationHub(object):
             total_low += data['usage_state']
 
         self._population_mapping.append({
-            'temperature': sum(all_temps) / len(all_temps),  # average temperature
+            'temperature': truncate_float(sum(all_temps) / len(all_temps)),  # average temperature
             'total_on': total_on,
             'total_low': total_low,
             'inlet': self._environment.inlet_temperature,
@@ -79,7 +82,8 @@ class SimulationHub(object):
             'demand': self._environment.demand,
         })
 
-
+def truncate_float(f, places=2):
+    return float("{0:.{1}f}".format(f, places))
 
 def make_range(start, end):
     """Return a generator of the time steps to iterate over"""

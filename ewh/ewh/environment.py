@@ -37,8 +37,19 @@ class Environment(object):
         """Integer number of time steps that comprise exactly one hour"""
         return self._tsf
 
+    @property
+    def current_hour(self):
+        """Current hour of the simulation, unfloored"""
+        return self._current_hour
+
+    @property
+    def time_tuple(self):
+        """(Current day, current hour of day), zero-indexed"""
+        return (math.floor(self._current_hour / 24), self._current_hour % 24)
+
     def sync_timestep(self, time_step_index):
-        self._current_hour = math.floor(time_step_index / config.TIME_SCALING_FACTOR)
+        """Set the hour of the simulation according to the given time step"""
+        self._current_hour = math.floor(time_step_index / self._tsf)
 
     def info(self):
         return {
@@ -48,9 +59,6 @@ class Environment(object):
             'inlet_temperature': self.inlet_temperature,
             'time_scaling_factor': self._tsf,
         }
-
-    def __eq__(self, other_environment):
-        return self.info() == other_environment.info()
 
 _environment_singleton = None
 def environment():
@@ -77,20 +85,11 @@ def setup_environment(csv_directory, time_scaling_factor):
     yearly_demand = list(itertools.repeat(daily_demand, 365))  # copy for every day
     # now we want a mapping of demand/ambient/inlet for every hour
     # [(demand for hour 0, ambient 0, inlet 0), (demand 1, ambient 1, inlet 1), ...]
-    mapping = env_zipper(yearly_demand, ambient, inlet)
+    mapping = zipper(yearly_demand, ambient, inlet)
     _environment_singleton = Environment(mapping, time_scaling_factor)
     return _environment_singleton
 
-def setup_dummy_environment(*args):
-    """Create a dummy environment with a uniform demand/temperature mapping
-    for debug purposes"""
-    _environment_singleton = Environment([(1, 20, 20) for _ in range(24*365)])
-    return _environment_singleton
-
-def zipper(*args):
-    return [[arg[index] for arg in args] for index in range(len(args[0]))]
-
-def env_zipper(demand, ambient, inlet):
+def zipper(demand, ambient, inlet):
     mapping = []
     for day_index in range(365):
         daily_demand = demand[day_index]
@@ -100,6 +99,3 @@ def env_zipper(demand, ambient, inlet):
             mapping.append([daily_demand[hour_index], daily_ambient[hour_index], daily_inlet[hour_index]])
 
     return mapping
-
-if __name__ == '__main__':
-    e = setup_environment('../Data', 60)
