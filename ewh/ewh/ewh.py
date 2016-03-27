@@ -21,7 +21,6 @@ class ElectricWaterHeater(object):
         self._environment = env
         self._hid = hid
 
-        self._total_time_on = 0
         self._current_demand = self._environment.demand
         self._lower_limit = self.configuration.regular_power_temperature
 
@@ -35,11 +34,6 @@ class ElectricWaterHeater(object):
     @property
     def configuration(self):
         return self._config
-
-    @property
-    def total_time_on(self):
-        """Number of time steps the heater has been on since initialization"""
-        return self._total_time_on
 
     def go_to_low_power_mode(self):
         self._lower_limit = self.configuration.low_power_temperature
@@ -55,9 +49,6 @@ class ElectricWaterHeater(object):
 
     def heater_is_on(self):
         return self._on_state == OnState.ON
-
-    def switch_power(self, new_state):
-        self._on_state = new_state
 
     def new_temperature(self, last_temperature):
         # G = surface area / thermal resistance of tank insulation
@@ -88,21 +79,17 @@ class ElectricWaterHeater(object):
         self._current_demand = randomize_demand(self._environment.demand)
         self._temperature = self.new_temperature(last_temperature)
 
-        if self.heater_is_on():
-            self._total_time_on += 1
-
         # turn on/off heater if temperature out of desired range
         if self.heater_needs_to_turn_off():
-            self.switch_power(OnState.OFF)
+            self._on_state = OnState.OFF
         elif self.heater_needs_to_turn_on():
-            self.switch_power(OnState.ON)
+            self._on_state = OnState.ON
 
     def info(self, include_config=False):
         d = {
             'current_temperature': self._temperature,
             'current_lower_limit': self._lower_limit,
             'current_demand': self._current_demand,
-            'total_time_on': self._total_time_on,
             'current_state': str(self._on_state),
             'id': self._hid,
         }
