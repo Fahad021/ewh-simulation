@@ -11,6 +11,7 @@ class Environment(object):
         self._mapping = mapping
         self._current_hour = start_hour
         self._tsf = time_scaling_factor
+        self._current_timestep = start_hour
 
     @property
     def current_tuple(self):
@@ -39,13 +40,14 @@ class Environment(object):
 
     @property
     def current_hour(self):
-        """Current hour of the simulation, unfloored"""
+        """Current hour of the simulation, floored"""
         return self._current_hour
 
     @property
     def time_tuple(self):
         """(Current day, current hour of day), zero-indexed"""
-        return (math.floor(self._current_hour / 24), self._current_hour % 24)
+        minutes_since_hour_start = (self._current_timestep * (60/self._tsf)) - (self.current_hour * 60)
+        return (math.floor(self._current_hour / 24), self._current_hour % 24, math.floor(minutes_since_hour_start))
 
     def is_in_peak_period(self):
         """Return True if environment is between hours of 6am-10am or 4pm-8pm"""
@@ -57,9 +59,24 @@ class Environment(object):
         hour_of_day = self.time_tuple[1]
         return hour_of_day in [9, 19]
 
+    def is_at_non_peak_boundary(self):
+        """Return True if environment is exactly at 10am or 8pm"""
+        _, hours, minutes = self.time_tuple
+        during_non_peak = hours in [9, 19]
+        at_boundary = minutes < (60/self._tsf)
+        return during_non_peak and at_boundary
+
+    def is_at_peak_boundary(self):
+        """Return True if environment is exactly at 6am or 4pm"""
+        _, hours, minutes = self.time_tuple
+        during_peak = hours in [5, 13]
+        at_boundary = minutes < (60/self._tsf)
+        return during_peak and at_boundary
+
     def sync_timestep(self, time_step_index):
         """Set the hour of the simulation according to the given time step"""
-        self._current_hour = math.floor(time_step_index / self._tsf)
+        self._current_timestep = time_step_index
+        self._current_hour = math.floor(self._current_timestep / self._tsf)
 
     def info(self):
         return {

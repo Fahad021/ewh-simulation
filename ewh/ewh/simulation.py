@@ -46,18 +46,14 @@ class SimulationHub(object):
 
     def do_timestep(self, time_step_index):
         self._environment.sync_timestep(time_step_index)
-        logging.info('Time Step {0} (total hour {1}) (day {2} hour {3})'.format(time_step_index, self._environment.current_hour, *self._environment.time_tuple))
+        logging.info('Time Step {0} (total hour {1}) (day {2} time {3}:{4})'.format(time_step_index, self._environment.current_hour, *self._environment.time_tuple))
 
         if (time_step_index % self._hub_interval) == 0:
             # calc and send some messages
-            peak_message = ' - PEAK PERIOD' if self._environment.is_in_peak_period() else None
-            off_message = ' - OFF PEAK' if self._environment.is_in_immediate_non_peak_period else None
-            logging.info('Hub{0}'.format(peak_message or off_message or ''))
-
             # TODO: clean this up
-            if self._environment.is_in_peak_period():
+            if self._environment.is_at_peak_boundary():
                 self.send_and_poll(self._population, [], [])
-            elif self._environment.is_in_immediate_non_peak_period():
+            elif self._environment.is_at_non_peak_boundary():
                 self.send_and_poll([], self._population, [])
             else:
                 self.send_and_poll([], [], self._population)
@@ -67,6 +63,7 @@ class SimulationHub(object):
             self.send_and_poll([], [], self._population)
 
     def send_and_poll(self, low_power_subset, regular_power_subset, unused_subset):
+        #logging.debug('S&P: LOW {0}, REGULAR {1}, keep {2}'.format(len(low_power_subset), len(regular_power_subset), len(unused_subset)))
         all_temps = []
         total_on = 0
         total_low = 0
@@ -80,7 +77,7 @@ class SimulationHub(object):
             total_low += data['usage_state']
 
         for c in regular_power_subset:
-            c.receive_regular_power_signal()
+            c.receive_regular_power_signal()  # send REGULAR
             data = c.data_output()
             all_temps.append(data['temperature'])
             total_on += data['on_state']
@@ -104,7 +101,6 @@ class SimulationHub(object):
             'demand': self._environment.demand,
             'temp_pstdev': truncate_float(statistics.pstdev(all_temps, mu=mean)),
             'temp_median': truncate_float(statistics.median(all_temps)),
-            #'temp_mode': truncate_float(statistics.mode(all_temps)),
             'temp_lowest': truncate_float(min(all_temps)),
         })
 

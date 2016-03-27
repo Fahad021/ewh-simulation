@@ -110,6 +110,8 @@ def parse_args():
         except OSError:
             pass  # OK if already exists
 
+    args.end_time_step = min(args.end_time_step, 8760 * args.time_scaling_factor)
+
     return args
 
 def output_simulation_info(directory, args):
