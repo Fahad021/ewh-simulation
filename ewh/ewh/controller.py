@@ -13,48 +13,24 @@ class Controller(object):
         self._commands_received = 0
         self._ewh = heater
         self._cid = cid
-
-        if randomize and random.choice([True, False]):
-            self._usage_state = random.choice([PowerUsage.REGULAR, PowerUsage.LOW])
-        else:
-            self._usage_state = PowerUsage.REGULAR
-
-        logging.debug("Initial controller {0}".format(pprint.pformat(self.info(include_ewh=True))))
+        self._usage_state = PowerUsage.REGULAR
         self._mapping = []
-
-
-    def change_usage_state(self, new_state):
-        if self._usage_state != new_state:
-            self._usage_state = new_state
-            self._usage_state_changes += 1
 
     def poll(self):
         """Update the EWH's temperature as if no message had been sent."""
         self._ewh.update()
-        # TODO: this is commented out as we're abandoning the individual metrics for now
-        #self._mapping.append(self.individual_data_output())
 
     def receive_low_power_signal(self):
         """Simulate a command from the hub to go into low-power mode."""
         self._ewh.update()
-        self.change_usage_state(PowerUsage.LOW)
+        self._usage_state = PowerUsage.LOW
         self._ewh.go_to_low_power_mode()
-        self._commands_received += 1
 
     def receive_regular_power_signal(self):
         """Simulate a command from the hub to go into regular-power mode."""
         self._ewh.update()
-        self.change_usage_state(PowerUsage.REGULAR)
+        self._usage_state = PowerUsage.REGULAR
         self._ewh.go_to_regular_power_mode()
-        self._commands_received += 1
-
-    def receive_force_configuration_signal(self, new_config):
-        self._ewh.configuration = new_config
-        self._ewh.update()
-        self._commands_received += 1
-
-    def total_power_consumption(self):
-        return self._usage_state_changes + self._commands_received + self._ewh.total_time_on
 
     def info(self, include_ewh=False):
         d = {
@@ -79,8 +55,8 @@ def make_controller_and_heater(tank_size, env=None, cid=None, randomize=False):
     if cid is None:
         cid = uuid.uuid1()  # "random" identifier
 
-    heater = make_heater(tank_size, env=env, hid=cid)
-    return Controller(heater, randomize=randomize, cid=cid)
+    heater = make_heater(tank_size, env=env, hid=cid, randomize=randomize)
+    return Controller(heater, cid=cid)
 
 def output_controller_to_csv(control, csv_file):
     fieldnames = ('time_step', 'temperature', 'on_state', 'usage_state', 'demand', 'inlet', 'ambient')

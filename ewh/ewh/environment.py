@@ -48,9 +48,14 @@ class Environment(object):
         return (math.floor(self._current_hour / 24), self._current_hour % 24)
 
     def is_in_peak_period(self):
-        """Return True if environment is between hours of 7am-11am or 5pm-9pm"""
+        """Return True if environment is between hours of 6am-10am or 4pm-8pm"""
         hour_of_day = self.time_tuple[1]
-        return hour_of_day in range(6, 10) or hour_of_day in range(16, 20)
+        return hour_of_day in range(5, 9) or hour_of_day in range(13, 19)
+
+    def is_in_immediate_non_peak_period(self):
+        """Return True if environment is at 10am or 8pm"""
+        hour_of_day = self.time_tuple[1]
+        return hour_of_day in [9, 19]
 
     def sync_timestep(self, time_step_index):
         """Set the hour of the simulation according to the given time step"""
