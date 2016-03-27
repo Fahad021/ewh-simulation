@@ -29,10 +29,7 @@ class SimulationHub(object):
         self._output_dir = None if kwargs['suppress_output'] else kwargs['output_directory']
         self._population_mapping = []
 
-    def run(self, subset_divider=None, subset_size=None, output_csv=True):
-        if subset_divider is None:
-            subset_divider = lambda population: (population, [])  # use identity function
-
+    def run(self):
         try:
             for time_step_index in self._time_step_range:
                 self.do_timestep(time_step_index)
