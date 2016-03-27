@@ -63,8 +63,8 @@ class SimulationHub(object):
             self.send_and_poll([], [], self._population)
 
     def send_and_poll(self, low_power_subset, regular_power_subset, unused_subset):
-        #logging.debug('S&P: LOW {0}, REGULAR {1}, keep {2}'.format(len(low_power_subset), len(regular_power_subset), len(unused_subset)))
         all_temps = []
+        all_demands = []
         total_on = 0
         total_low = 0
 
@@ -73,6 +73,7 @@ class SimulationHub(object):
             c.receive_low_power_signal()  # send LOW
             data = c.data_output()
             all_temps.append(data['temperature'])
+            all_demands.append(data['demand'])
             total_on += data['on_state']
             total_low += data['usage_state']
 
@@ -80,6 +81,7 @@ class SimulationHub(object):
             c.receive_regular_power_signal()  # send REGULAR
             data = c.data_output()
             all_temps.append(data['temperature'])
+            all_demands.append(data['demand'])
             total_on += data['on_state']
             total_low += data['usage_state']
 
@@ -87,6 +89,7 @@ class SimulationHub(object):
             c.poll()  # don't receive anything
             data = c.data_output()
             all_temps.append(data['temperature'])
+            all_demands.append(data['demand'])
             total_on += data['on_state']
             total_low += data['usage_state']
 
@@ -98,7 +101,7 @@ class SimulationHub(object):
             'total_low': total_low,
             'inlet': self._environment.inlet_temperature,
             'ambient': self._environment.ambient_temperature,
-            'demand': self._environment.demand,
+            'demand': truncate_float(statistics.mean(all_demands)),
             'temp_pstdev': truncate_float(statistics.pstdev(all_temps, mu=mean)),
             'temp_median': truncate_float(statistics.median(all_temps)),
             'temp_lowest': truncate_float(min(all_temps)),
