@@ -50,7 +50,9 @@ class SimulationHub(object):
 
         if (time_step_index % self._hub_interval) == 0:
             # calc and send some messages
-            logging.info('Hub{0}'.format(' - PEAK PERIOD' if self._environment.is_in_peak_period() else ''))
+            peak_message = ' - PEAK PERIOD' if self._environment.is_in_peak_period() else None
+            off_message = ' - OFF PEAK' if self._environment.is_in_immediate_non_peak_period else None
+            logging.info('Hub{0}'.format(peak_message or off_message or ''))
 
             # TODO: clean this up
             if self._environment.is_in_peak_period():
@@ -78,7 +80,7 @@ class SimulationHub(object):
             total_low += data['usage_state']
 
         for c in regular_power_subset:
-            c.receive_regular_power_signal
+            c.receive_regular_power_signal()
             data = c.data_output()
             all_temps.append(data['temperature'])
             total_on += data['on_state']
@@ -102,7 +104,8 @@ class SimulationHub(object):
             'demand': self._environment.demand,
             'temp_pstdev': truncate_float(statistics.pstdev(all_temps, mu=mean)),
             'temp_median': truncate_float(statistics.median(all_temps)),
-            'temp_mode': truncate_float(statistics.mode(all_temps)),
+            #'temp_mode': truncate_float(statistics.mode(all_temps)),
+            'temp_lowest': truncate_float(min(all_temps)),
         })
 
 def truncate_float(f, places=2):
@@ -129,13 +132,13 @@ def randomize_subset_variable_limited_size(population, max_subset_size):
     return randomize_subset_constant_size(population, random.randint(0, max_subset_size))
 
 def build_small_tank_population(population_size, env):
-    return [controller.make_controller_and_heater(TankSize.SMALL, env=env, cid=i) for i in range(population_size)]
+    return [controller.make_controller_and_heater(TankSize.SMALL, env=env, cid=i, randomize=True) for i in range(population_size)]
 
 def build_large_tank_population(population_size, env):
-    return [controller.make_controller_and_heater(TankSize.LARGE, env=env, cid=i) for i in range(population_size)]
+    return [controller.make_controller_and_heater(TankSize.LARGE, env=env, cid=i, randomize=True) for i in range(population_size)]
 
 def output_population_to_csv(mapping, csv_directory):
-    fieldnames = ('time_step', 'temperature', 'total_on', 'total_low', 'inlet', 'ambient', 'demand', 'temp_pstdev', 'temp_median', 'temp_mode')
+    fieldnames = ('time_step', 'temperature', 'total_on', 'total_low', 'inlet', 'ambient', 'demand', 'temp_pstdev', 'temp_median', 'temp_lowest')
     location = os.path.join(csv_directory, 'population.csv')
     with open(location, 'w') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)

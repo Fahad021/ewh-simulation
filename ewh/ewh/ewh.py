@@ -27,12 +27,10 @@ class ElectricWaterHeater(object):
 
         if randomize:
             # set temperature somewhere within deadband
-            self._temperature = random.uniform(self.configuration.low_power_temperature, self.configuration.desired_temperature)
+            self._temperature = random.uniform(self.configuration.regular_power_temperature, self.configuration.desired_temperature)
         else:
             # set to desired temperature
             self._temperature = self.configuration.desired_temperature
-
-        logging.debug("Initial {0}".format(pprint.pformat(self.info(include_config=True))))
 
     @property
     def configuration(self):
@@ -46,7 +44,7 @@ class ElectricWaterHeater(object):
     def go_to_low_power_mode(self):
         self._lower_limit = self.configuration.low_power_temperature
 
-    def got_to_regular_power_mode(self):
+    def go_to_regular_power_mode(self):
         self._lower_limit = self.configuration.regular_power_temperature
 
     def heater_needs_to_turn_off(self):
@@ -59,7 +57,6 @@ class ElectricWaterHeater(object):
         return self._on_state == OnState.ON
 
     def switch_power(self, new_state):
-        logging.debug("EWH_{0} turning {1}".format(self._hid, str(new_state)))
         self._on_state = new_state
 
     def new_temperature(self, last_temperature):
@@ -90,7 +87,6 @@ class ElectricWaterHeater(object):
         last_temperature = self._temperature
         self._current_demand = randomize_demand(self._environment.demand)
         self._temperature = self.new_temperature(last_temperature)
-        logging.debug('EWH_{0}: demand {1:.2f}, temperature {2:.2f}->{3:.2f}'.format(self._hid, self._current_demand, last_temperature, self._temperature))
 
         if self.heater_is_on():
             self._total_time_on += 1
@@ -130,9 +126,9 @@ def randomize_demand(demand_in_litres):
     demand (in L/h)"""
     return random.uniform(0, 2) * to_gallons(demand_in_litres)
 
-def make_heater(size, env=None, hid=None):
+def make_heater(size, env=None, hid=None, randomize=False):
     c = config.HeaterConfiguration(tank_size=size)
-    return ElectricWaterHeater(configuration=c, env=env, hid=hid)
+    return ElectricWaterHeater(configuration=c, env=env, hid=hid, randomize=randomize)
 
 def to_celsius(fahrenheit):
     """Convert degrees Fahrenheit to degrees Celsius"""
