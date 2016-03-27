@@ -23,6 +23,7 @@ class ElectricWaterHeater(object):
 
         self._current_demand = self._environment.demand
         self._lower_limit = self.configuration.regular_power_temperature
+        self._upper_limit = self.configuration.desired_temperature
 
         if randomize:
             # set temperature somewhere within deadband
@@ -37,12 +38,14 @@ class ElectricWaterHeater(object):
 
     def go_to_low_power_mode(self):
         self._lower_limit = self.configuration.low_power_temperature
+        self._upper_limit = self.configuration.regular_power_temperature
 
     def go_to_regular_power_mode(self):
         self._lower_limit = self.configuration.regular_power_temperature
+        self._upper_limit = self.configuration.desired_temperature
 
     def heater_needs_to_turn_off(self):
-        return (self._on_state == OnState.ON) and (self._temperature >= self.configuration.desired_temperature)
+        return (self._on_state == OnState.ON) and (self._temperature >= self._upper_limit)
 
     def heater_needs_to_turn_on(self):
         return (self._on_state == OnState.OFF) and (self._temperature < self._lower_limit)
