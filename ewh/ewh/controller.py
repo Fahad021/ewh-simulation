@@ -22,15 +22,15 @@ class Controller(object):
 
     def receive_low_power_signal(self):
         """Simulate a command from the hub to go into low-power mode."""
-        self._ewh.update()
         self._usage_state = PowerUsage.LOW
         self._ewh.go_to_low_power_mode()
+        self._ewh.update()
 
     def receive_regular_power_signal(self):
         """Simulate a command from the hub to go into regular-power mode."""
-        self._ewh.update()
         self._usage_state = PowerUsage.REGULAR
         self._ewh.go_to_regular_power_mode()
+        self._ewh.update()
 
     def info(self, include_ewh=False):
         d = {
