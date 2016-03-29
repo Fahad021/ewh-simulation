@@ -62,7 +62,10 @@ class SimulationHub(object):
     def send_and_poll(self, low_power_subset, regular_power_subset, unused_subset):
         all_temps = []
         all_demands = []
-        total_on = 0
+        comms_temps = []
+        non_comms_temps = []
+        comms_on = 0
+        non_comms_on = 0
         total_low = 0
 
         # TODO: clean this up
@@ -71,7 +74,8 @@ class SimulationHub(object):
             data = c.data_output()
             all_temps.append(data['temperature'])
             all_demands.append(data['demand'])
-            total_on += data['on_state']
+            comms_temps.append(data['temperature'])
+            comms_on += data['on_state']
             total_low += data['usage_state']
 
         for c in regular_power_subset:
@@ -79,29 +83,45 @@ class SimulationHub(object):
             data = c.data_output()
             all_temps.append(data['temperature'])
             all_demands.append(data['demand'])
-            total_on += data['on_state']
+            comms_temps.append(data['temperature'])
+            comms_on += data['on_state']
             total_low += data['usage_state']
+
+        total_comms = len(low_power_subset) + len(regular_power_subset)
+        total_non_comms = len(unused_subset)
 
         for c in unused_subset:
             c.poll()  # don't receive anything
             data = c.data_output()
             all_temps.append(data['temperature'])
             all_demands.append(data['demand'])
-            total_on += data['on_state']
+            non_comms_temps.append(data['temperature'])
+            non_comms_on += data['on_state']
             total_low += data['usage_state']
 
-        mean = truncate_float(statistics.mean(all_temps))
+        total_on = non_comms_on + comms_on
+        all_mean = statistics.mean(all_temps)
+        comms_mean = statistics.mean(comms_temps)
+        non_comms_mean = statistics.mean(non_comms_temps)
 
         self._population_mapping.append({
-            'temperature': mean,  # mean average temperature
-            'total_on': total_on,
-            'total_low': total_low,
+            'temperature': truncate_float(all_mean),  # mean average temperature
+            'total_on': total_on,  # total number of heaters in ON state
+            'total_low': total_low,  # total number of controllers in LOW state
             'inlet': self._environment.inlet_temperature,
             'ambient': self._environment.ambient_temperature,
             'demand': truncate_float(statistics.mean(all_demands)),
-            'temp_pstdev': truncate_float(statistics.pstdev(all_temps, mu=mean)),
+            'temp_pstdev': truncate_float(statistics.pstdev(all_temps, mu=all_mean)), # population standard deviation of all temperatures
             'temp_median': truncate_float(statistics.median(all_temps)),
             'temp_lowest': truncate_float(min(all_temps)),
+            'comms_on': comms_on,  # number of controllers with communications in ON state
+            'non_comms_on': non_comms_on,  # number of controllers without communcations in ON state
+            'total_population_size': total_comms + total_non_comms,
+            'total_comms_population_size': total_comms,  # number of controllers with communication capabilities
+            'comms_temps_mean': truncate_float(comms_mean),
+            'comms_temps_pstdev': truncate_float(statistics.pstdev(comms_temps, mu=comms_mean)),
+            'non_comms_mean': truncate_float(non_comms_mean),
+            'non_comms_temps_pstdev': truncate_float(statistics.pstdev(non_comms_temps, mu=non_comms_mean)),
         })
 
 def truncate_float(f, places=2):
