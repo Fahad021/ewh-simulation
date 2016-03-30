@@ -101,8 +101,21 @@ class SimulationHub(object):
 
         total_on = non_comms_on + comms_on
         all_mean = statistics.mean(all_temps)
-        comms_mean = statistics.mean(comms_temps)
-        non_comms_mean = statistics.mean(non_comms_temps)
+        try:
+            comms_mean = statistics.mean(comms_temps)
+        except statistics.StatisticsError:
+            comms_mean = 0
+            comms_pstdev = 0
+        else:
+            comms_pstdev = statistics.pstdev(comms_temps, mu=comms_mean)
+
+        try:
+            non_comms_mean = statistics.mean(non_comms_temps)
+        except statistics.StatisticsError:
+            non_comms_mean = 0
+            non_comms_pstdev = 0
+        else:
+            non_comms_pstdev = statistics.pstdev(non_comms_temps, mu=non_comms_mean)
 
         self._population_mapping.append({
             'temperature': truncate_float(all_mean),  # mean average temperature
@@ -119,9 +132,9 @@ class SimulationHub(object):
             'total_population_size': total_comms + total_non_comms,
             'total_comms_population_size': total_comms,  # number of controllers with communication capabilities
             'comms_temps_mean': truncate_float(comms_mean),
-            'comms_temps_pstdev': truncate_float(statistics.pstdev(comms_temps, mu=comms_mean)),
+            'comms_temps_pstdev': truncate_float(comms_pstdev),
             'non_comms_mean': truncate_float(non_comms_mean),
-            'non_comms_temps_pstdev': truncate_float(statistics.pstdev(non_comms_temps, mu=non_comms_mean)),
+            'non_comms_temps_pstdev': truncate_float(non_comms_pstdev),
         })
 
 def truncate_float(f, places=2):
@@ -154,7 +167,24 @@ def build_large_tank_population(population_size, env):
     return [controller.make_controller_and_heater(TankSize.LARGE, env=env, cid=i, randomize=True) for i in range(population_size)]
 
 def output_population_to_csv(mapping, csv_directory):
-    fieldnames = ('time_step', 'temperature', 'total_on', 'total_low', 'inlet', 'ambient', 'demand', 'temp_pstdev', 'temp_median', 'temp_lowest')
+    fieldnames = ('time_step',
+        'temperature',
+        'total_on',
+        'total_low',
+        'inlet',
+        'ambient',
+        'demand',
+        'temp_pstdev',
+        'temp_median',
+        'temp_lowest',
+        'comms_on',
+        'non_comms_on',
+        'total_population_size',
+        'total_comms_population_size',
+        'comms_temps_mean',
+        'comms_temps_pstdev',
+        'non_comms_mean',
+        'non_comms_temps_pstdev')
     location = os.path.join(csv_directory, 'population.csv')
     with open(location, 'w') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
