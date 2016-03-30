@@ -118,23 +118,23 @@ class SimulationHub(object):
             non_comms_pstdev = statistics.pstdev(non_comms_temps, mu=non_comms_mean)
 
         self._population_mapping.append({
-            'temperature': truncate_float(all_mean),  # mean average temperature
+            'temperature': all_mean,  # mean average temperature
             'total_on': total_on,  # total number of heaters in ON state
             'total_low': total_low,  # total number of controllers in LOW state
             'inlet': self._environment.inlet_temperature,
             'ambient': self._environment.ambient_temperature,
-            'demand': truncate_float(statistics.mean(all_demands)),
-            'temp_pstdev': truncate_float(statistics.pstdev(all_temps, mu=all_mean)), # population standard deviation of all temperatures
-            'temp_median': truncate_float(statistics.median(all_temps)),
-            'temp_lowest': truncate_float(min(all_temps)),
+            'demand': statistics.mean(all_demands),
+            'temp_pstdev': statistics.pstdev(all_temps, mu=all_mean), # population standard deviation of all temperatures
+            'temp_median': statistics.median(all_temps),
+            'temp_lowest': min(all_temps),
             'comms_on': comms_on,  # number of controllers with communications in ON state
             'non_comms_on': non_comms_on,  # number of controllers without communcations in ON state
             'total_population_size': total_comms + total_non_comms,
             'total_comms_population_size': total_comms,  # number of controllers with communication capabilities
-            'comms_temps_mean': truncate_float(comms_mean),
-            'comms_temps_pstdev': truncate_float(comms_pstdev),
-            'non_comms_mean': truncate_float(non_comms_mean),
-            'non_comms_temps_pstdev': truncate_float(non_comms_pstdev),
+            'comms_temps_mean': comms_mean,
+            'comms_temps_pstdev': comms_pstdev,
+            'non_comms_mean': non_comms_mean,
+            'non_comms_temps_pstdev': non_comms_pstdev,
         })
 
 def truncate_float(f, places=2):
