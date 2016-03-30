@@ -57,7 +57,7 @@ class ElectricWaterHeater(object):
         # G = surface area / thermal resistance of tank insulation
         g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
         # B(t) = demand * 8.3 * (specific heat of water)
-        b = self._current_demand * 8.3 * config.SPECIFIC_HEAT_OF_WATER
+        b = to_gallons(self._current_demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         # C = equivalent thermal mass of tank
         # C = 8.3 * (number of gallons) * (specific heat of water)
         c = 8.3 * self.configuration.tank_gallons * config.SPECIFIC_HEAT_OF_WATER
@@ -111,10 +111,9 @@ class ElectricWaterHeater(object):
             'ambient': float(self._environment.ambient_temperature),
         }
 
-def randomize_demand(demand_in_litres):
-    """Return a randomized demand (in gallons per hour) when given a static
-    demand (in L/h)"""
-    return random.uniform(0, 2) * to_gallons(demand_in_litres)
+def randomize_demand(demand):
+    """Return a randomized demand when given a static demand"""
+    return random.uniform(0, 2) * demand
 
 def make_heater(size, env=None, hid=None, randomize=False):
     c = config.HeaterConfiguration(tank_size=size)
@@ -131,3 +130,7 @@ def to_fahrenheit(celsius):
 def to_gallons(litres):
     """Convert metric litres to US gallons"""
     return 0.264172052 * litres
+
+def to_litres(gallons):
+    """Convert US gallons to metric litres"""
+    return 3.78541 * gallons
