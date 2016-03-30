@@ -79,7 +79,7 @@ class ElectricWaterHeater(object):
 
     def update(self):
         last_temperature = self._temperature
-        self._current_demand = randomize_demand(self._environment.demand)
+        self._current_demand = randomize_demand(self._environment.demand/self._environment.time_scaling_factor)
         self._temperature = self.new_temperature(last_temperature)
 
         # turn on/off heater if temperature out of desired range
