@@ -127,6 +127,7 @@ class SimulationHub(object):
             'temp_pstdev': statistics.pstdev(all_temps, mu=all_mean), # population standard deviation of all temperatures
             'temp_median': statistics.median(all_temps),
             'temp_lowest': min(all_temps),
+            'temp_highest': max(all_temps),
             'comms_on': comms_on,  # number of controllers with communications in ON state
             'non_comms_on': non_comms_on,  # number of controllers without communcations in ON state
             'total_population_size': total_comms + total_non_comms,
@@ -177,6 +178,7 @@ def output_population_to_csv(mapping, csv_directory):
         'temp_pstdev',
         'temp_median',
         'temp_lowest',
+        'temp_highest',
         'comms_on',
         'non_comms_on',
         'total_population_size',
