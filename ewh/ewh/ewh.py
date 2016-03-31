@@ -9,6 +9,10 @@ import pprint
 import random
 
 class ElectricWaterHeater(object):
+    """Represents an EWH object in the simulation. This controls whether or not
+the heating elements are on or off, and changes the temperature of the tank
+according to input demand, inlet/ambient temperature, and heating element state.
+    """
     def __init__(self, randomize=False, state=OnState.OFF, configuration=None, env=None, hid=None):
         self._on_state = state
 
@@ -34,26 +38,34 @@ class ElectricWaterHeater(object):
 
     @property
     def configuration(self):
+        """Configuration for this heater"""
         return self._config
 
     def go_to_low_power_mode(self):
+        """Change temperature deadband to (low, regular)"""
         self._lower_limit = self.configuration.low_power_temperature
         self._upper_limit = self.configuration.regular_power_temperature
 
     def go_to_regular_power_mode(self):
+        """Change temperature deadband to (regular, desired)"""
         self._lower_limit = self.configuration.regular_power_temperature
         self._upper_limit = self.configuration.desired_temperature
 
     def heater_needs_to_turn_off(self):
+        """Return True if heater is on and is OK to turn off"""
         return (self._on_state == OnState.ON) and (self._temperature >= self._upper_limit)
 
     def heater_needs_to_turn_on(self):
+        """Return True if heater is off and is OK to turn on"""
         return (self._on_state == OnState.OFF) and (self._temperature < self._lower_limit)
 
     def heater_is_on(self):
+        """Return True if heating element is on"""
         return self._on_state == OnState.ON
 
     def new_temperature(self, last_temperature):
+        """Given the temperature at the last timestep, calculate a new temperature
+        according to the solution to the PDE in the Dolan/Nehrir/Gerez paper"""
         # G = surface area [ft^2] / thermal resistance of tank insulation [h ft^2 F/Btu]
         g = to_square_feet(self.configuration.tank_surface_area) / self.configuration.insulation_thermal_resistance
         # B(t) = demand [Gal] * 8.3 * (specific heat of water = 1)
@@ -78,6 +90,7 @@ class ElectricWaterHeater(object):
         return to_celsius(result)
 
     def update(self):
+        """Refresh temperature readings and on/off state for the current timestep"""
         last_temperature = self._temperature
         self._current_demand = randomize_demand(self._environment.demand/self._environment.time_scaling_factor)
         self._temperature = self.new_temperature(last_temperature)
@@ -103,6 +116,7 @@ class ElectricWaterHeater(object):
         return d
 
     def data_output(self):
+        """CSV output for this heater at the current timestep"""
         return {
             'temperature': float(self._temperature),
             'on_state': 1 if self.heater_is_on() else 0,
@@ -116,6 +130,7 @@ def randomize_demand(demand):
     return random.uniform(0, 2) * demand
 
 def make_heater(size, env=None, hid=None, randomize=False):
+    """Create a heater object of a given size"""
     c = config.HeaterConfiguration(tank_size=size)
     return ElectricWaterHeater(configuration=c, env=env, hid=hid, randomize=randomize)
 

@@ -44,14 +44,17 @@ class Controller(object):
         return d
 
     def data_output(self):
+        """CSV output for this controller and heater at the current timestep"""
         d = self._ewh.data_output()
         d['usage_state'] = 1 if self._usage_state == PowerUsage.LOW else 0
         return d
 
     def time_step_data():
+        """Total CSV output of this controller and heater through the entire simulation"""
         return self._mapping
 
 def make_controller_and_heater(tank_size, env=None, cid=None, randomize=False):
+    """Create a controller/heater pair of the given tank size"""
     if cid is None:
         cid = uuid.uuid1()  # "random" identifier
 
@@ -59,6 +62,7 @@ def make_controller_and_heater(tank_size, env=None, cid=None, randomize=False):
     return Controller(heater, cid=cid)
 
 def output_controller_to_csv(control, csv_file):
+    """Output a controller/heater pair's total mapping to a CSV"""
     fieldnames = ('time_step', 'temperature', 'on_state', 'usage_state', 'demand', 'inlet', 'ambient')
     with open(csv_file, 'ab') as f:
         writer = csv.DictWriter(f, fieldnames)

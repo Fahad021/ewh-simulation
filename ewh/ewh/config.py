@@ -23,7 +23,7 @@ class HeaterConfiguration(object):
             self._tank_radius = 0.28 # meters
             self._tank_height = 1.25
             self._heating_element_rating = 2.8  # kW
-            self._tank_gallon = 47.551  # gallons (=180L)
+            self._tank_gallons = 47.551  # gallons (=180L)
         else:
             # 270 liter tank
             self._tank_surface_area = 3.43062
@@ -49,18 +49,17 @@ class HeaterConfiguration(object):
 
     @property
     def desired_temperature(self):
+        """Upper limit of tank temperature during REGULAR power usage mode, in degC"""
         return self._desired_temperature
-
-    @desired_temperature.setter
-    def desired_temperature(self, temp):
-        self._desired_temperature = temp
 
     @property
     def low_power_temperature(self):
+        """Lower limit of tank temperature during LOW power usage mode, in degC"""
         return self._low_power_temperature
 
     @property
     def regular_power_temperature(self):
+        """Lower limit of tank temperature during REGULAR power usage mode, in degC"""
         return self._regular_power_temperature
 
     @property
@@ -80,10 +79,12 @@ class HeaterConfiguration(object):
 
     @property
     def initial_tank_temperature(self):
+        """Tank temperature on initialization in degC"""
         return self._initial_temperature
 
     @property
     def insulation_thermal_resistance(self):
+        """Thermal resistance of tank insulation in h ft^2 degF/Btu"""
         return INSULATION_THERMAL_RESISTANCE
 
     @property
@@ -93,8 +94,5 @@ class HeaterConfiguration(object):
 
     @property
     def tank_gallons(self):
+        """Size of the tank in gallons"""
         return self._tank_gallons
-
-def to_gallons(litres):
-    """Convert metric litres to US gallons"""
-    return 0.264172052 * litres

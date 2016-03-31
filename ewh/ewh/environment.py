@@ -88,18 +88,29 @@ def environment():
     return _environment_singleton
 
 def setup_temperature_csv(csv_location):
+    """Return a list of CSV values containing day & temperature data. The index
+of the list represents the day of the year, and the value at that index represents
+the temperature at that day.
+    """
     with open(csv_location) as csvfile:
         reader = csv.DictReader(csvfile)
         rows = [list(itertools.repeat(float(row['Celsius']), 24)) for row in reader]
     return rows
 
 def setup_demand(csv_location):
+    """Return a list of CSV values containing hour & temperature data. The index
+of the list represents the hour of the day, and the value at that index represents
+the demand (in L/h) at that hour.
+"""
     with open(csv_location) as csvfile:
         reader = csv.DictReader(csvfile)
         rows = [float(row['Litres/Hour']) for row in reader]
     return rows
 
 def setup_environment(csv_directory, time_scaling_factor):
+    """Build up an environment from the time/temperature/demand mappings in the
+given CSV directory. The given TSF is also included.
+"""
     ambient = setup_temperature_csv(os.path.join(csv_directory, 'AirTemperature.csv'))
     inlet = setup_temperature_csv(os.path.join(csv_directory, 'IncomingWaterTemperature.csv'))
     daily_demand = setup_demand(os.path.join(csv_directory, 'WaterUse.csv'))
@@ -112,6 +123,7 @@ def setup_environment(csv_directory, time_scaling_factor):
     return _environment_singleton
 
 def zipper(demand, ambient, inlet):
+    """Make the mapping between demand/ambient/inlet temperatures."""
     mapping = []
     for day_index in range(365):
         daily_demand = demand[day_index]
