@@ -23,14 +23,14 @@ class HeaterConfiguration(object):
             self._tank_radius = 0.28 # meters
             self._tank_height = 1.25
             self._heating_element_rating = 2.8  # kW
-            self._tank_gallons = 180  # litres
+            self._tank_gallon = 47.551  # gallons (=180L)
         else:
             # 270 liter tank
             self._tank_surface_area = 3.43062
             self._tank_radius = 0.30
             self._tank_height = 1.52
             self._heating_element_rating = 4.2
-            self._tank_gallons = 270
+            self._tank_gallons = 71.3265  # gallons (=270L)
 
     def __eq__(self, given_configuration):
         return self.info() == given_configuration.info()
@@ -94,3 +94,7 @@ class HeaterConfiguration(object):
     @property
     def tank_gallons(self):
         return self._tank_gallons
+
+def to_gallons(litres):
+    """Convert metric litres to US gallons"""
+    return 0.264172052 * litres

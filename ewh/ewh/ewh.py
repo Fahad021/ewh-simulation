@@ -54,9 +54,9 @@ class ElectricWaterHeater(object):
         return self._on_state == OnState.ON
 
     def new_temperature(self, last_temperature):
-        # G = surface area / thermal resistance of tank insulation
-        g = self.configuration.tank_surface_area / self.configuration.insulation_thermal_resistance
-        # B(t) = demand * 8.3 * (specific heat of water)
+        # G = surface area [ft^2] / thermal resistance of tank insulation [h ft^2 F/Btu]
+        g = to_square_feet(self.configuration.tank_surface_area) / self.configuration.insulation_thermal_resistance
+        # B(t) = demand [Gal] * 8.3 * (specific heat of water = 1)
         b = to_gallons(self._current_demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         # C = equivalent thermal mass of tank
         # C = 8.3 * (number of gallons) * (specific heat of water)
@@ -134,3 +134,7 @@ def to_gallons(litres):
 def to_litres(gallons):
     """Convert US gallons to metric litres"""
     return 3.78541 * gallons
+
+def to_square_feet(square_metres):
+    """Convert metres^2 to ft^2"""
+    return square_metres * 10.7639
