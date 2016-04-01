@@ -45,14 +45,9 @@ class Environment(object):
 
     @property
     def time_tuple(self):
-        """(Current day, current hour of day), zero-indexed"""
+        """(Current day, current hour of day, current minute of hour), zero-indexed"""
         minutes_since_hour_start = (self._current_timestep * (60/self._tsf)) - (self.current_hour * 60)
         return (math.floor(self._current_hour / 24), self._current_hour % 24, math.floor(minutes_since_hour_start))
-
-    def is_in_peak_period(self):
-        """Return True if environment is between hours of 6am-10am or 4pm-8pm"""
-        hour_of_day = self.time_tuple[1]
-        return hour_of_day in range(6, 10) or hour_of_day in range(15, 19)
 
     def is_at_non_peak_boundary(self):
         """Return True if environment is exactly at 10am or 8pm"""
