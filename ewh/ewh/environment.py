@@ -52,14 +52,14 @@ class Environment(object):
     def is_at_non_peak_boundary(self):
         """Return True if environment is exactly at 10am or 8pm"""
         _, hours, minutes = self.time_tuple
-        during_non_peak = hours in [10, 19]
+        during_non_peak = hours in [10, 20]
         at_boundary = minutes < (60/self._tsf)
         return during_non_peak and at_boundary
 
     def is_at_peak_boundary(self):
         """Return True if environment is exactly at 6am or 4pm"""
         _, hours, minutes = self.time_tuple
-        during_peak = hours in [6, 15]
+        during_peak = hours in [6, 16]
         at_boundary = minutes < (60/self._tsf)
         return during_peak and at_boundary
 
