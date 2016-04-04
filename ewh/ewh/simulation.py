@@ -78,20 +78,24 @@ class SimulationHub(object):
 
     def reactivation_zone_setters(self):
         comms_mean = mean([c.temperature for c in self._comms_population])
-        self._reactivation_low_population = [c for c in self._comms_population if c.temperature <= comms_mean]
-        self._reactivation_high_population = [c for c in self._comms_population if c.temperature > comms_mean]
-        self._reactivation_low_mean = mean([c.temperature for c in self._reactivation_low_population])
-        self._reactivation_high_mean = mean([c.temperature for c in self._reactivation_high_population])
+        low_population = [c for c in self._comms_population if c.temperature <= comms_mean]
+        high_population = [c for c in self._comms_population if c.temperature > comms_mean]
+        low_mean = mean([c.temperature for c in low_population])
+        high_mean = mean([c.temperature for c in high_population])
+
+        low_low = [c for c in self._reactivation_low_population if c.temperature <= low_mean]
+        high_low = [c for c in self._reactivation_high_population if c.temperature <= high_mean]
+        self._reactivation_zone_mappings = (
+            low_low,
+            list(set(self._reactivation_low_population) - set(low_low)),
+            high_low,
+            list(set(self._reactivation_high_population) - set(high_low)),
+        )
 
     def reactivation_zone_boundary_step(self, zone):
-        if zone == 0:
-            [c.receive_regular_power_signal() for c in self._reactivation_low_population if c.temperature <= self._reactivation_low_mean]
-        elif zone == 1:
-            [c.receive_regular_power_signal() for c in self._reactivation_low_population if c.temperature > self._reactivation_low_mean]
-        elif zone == 2:
-            [c.receive_regular_power_signal() for c in self._reactivation_high_population if c.temperature <= self._reactivation_high_mean]
-        elif zone == 3:
-            [c.receive_regular_power_signal() for c in self._reactivation_high_population if c.temperature <= self._reactivation_high_mean]
+        zone_subset = self._reactivation_zone_mappings[zone]
+        the_rest = set(self._population) - set(zone_subset)
+        self.send_and_poll(zone_subset, [], the_rest)
 
     def send_and_poll(self, low_power_subset, regular_power_subset, unused_subset):
         all_temps = []
@@ -125,7 +129,7 @@ class SimulationHub(object):
         total_non_comms = len(unused_subset)
 
         for c in unused_subset:
-            c.poll()  # don't receive anything
+            c.poll()  # do nothing, just update temps
             data = c.data_output()
             all_temps.append(data['temperature'])
             all_demands.append(data['demand'])
