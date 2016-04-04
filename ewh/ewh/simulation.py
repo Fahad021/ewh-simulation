@@ -34,6 +34,11 @@ class SimulationHub(object):
         self._comms_population = []
         self._non_comms_population = self._population
 
+        self._reactivation_low_population = []
+        self._reactivation_low_mean = 0
+        self._reactivation_high_population = []
+        self._reactivation_high_mean = 0
+
     def run(self):
         try:
             for time_step_index in self._time_step_range:
@@ -58,15 +63,35 @@ class SimulationHub(object):
                 self._comms_population, self._non_comms_population = self._divider(self._population, self._divider_size)
                 # send a LOW power signal to comms population
                 self.send_and_poll(self._comms_population, [], self._non_comms_population)
-            elif self._environment.is_at_non_peak_boundary():
-                # send a REGULAR power signal to comms population
-                self.send_and_poll([], self._comms_population, self._non_comms_population)
+            elif self._environment.is_in_reactivation_period() and self._environment.is_at_quarter_hour_boundary():
+                # send a REGULAR power signal to comms population a bit at a time
+                zone = self._environment.reactivation_zone()
+                if zone == 0:
+                    self.reactivation_zone_setters()
+                self.reactivation_zone_boundary_step(zone)
             else:
                 # update temps in ewh as normal
                 self.send_and_poll([], [], self._population)
         else:
             # hub does nothing this step - just update temperatures in ewhs
             self.send_and_poll([], [], self._population)
+
+    def reactivation_zone_setters(self):
+        comms_mean = mean([c.temperature for c in self._comms_population])
+        self._reactivation_low_population = [c for c in self._comms_population if c.temperature <= comms_mean]
+        self._reactivation_high_population = [c for c in self._comms_population if c.temperature > comms_mean]
+        self._reactivation_low_mean = mean([c.temperature for c in self._reactivation_low_population])
+        self._reactivation_high_mean = mean([c.temperature for c in self._reactivation_high_population])
+
+    def reactivation_zone_boundary_step(self, zone):
+        if zone == 0:
+            [c.receive_regular_power_signal() for c in self._reactivation_low_population if c.temperature <= self._reactivation_low_mean]
+        elif zone == 1:
+            [c.receive_regular_power_signal() for c in self._reactivation_low_population if c.temperature > self._reactivation_low_mean]
+        elif zone == 2:
+            [c.receive_regular_power_signal() for c in self._reactivation_high_population if c.temperature <= self._reactivation_high_mean]
+        elif zone == 3:
+            [c.receive_regular_power_signal() for c in self._reactivation_high_population if c.temperature <= self._reactivation_high_mean]
 
     def send_and_poll(self, low_power_subset, regular_power_subset, unused_subset):
         all_temps = []
@@ -176,6 +201,12 @@ def randomize_subset_variable_limited_size(population, max_subset_size):
 
 def entire_population(population, size):
     return (population, [])
+
+def mean(population):
+    try:
+        return statistics.mean(population)
+    except statistics.StatisticsError:
+        return 0
 
 def build_small_tank_population(population_size, env):
     return [controller.make_controller_and_heater(TankSize.SMALL, env=env, cid=i, randomize=True) for i in range(population_size)]

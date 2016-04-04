@@ -53,6 +53,10 @@ class Controller(object):
         """Total CSV output of this controller and heater through the entire simulation"""
         return self._mapping
 
+    @property
+    def temperature(self):
+        return self._ewh.temperature
+
 def make_controller_and_heater(tank_size, env=None, cid=None, randomize=False):
     """Create a controller/heater pair of the given tank size"""
     if cid is None:

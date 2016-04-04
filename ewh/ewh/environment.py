@@ -63,6 +63,16 @@ class Environment(object):
         at_boundary = minutes < (60/self._tsf)
         return during_peak and at_boundary
 
+    def is_in_reactivation_period(self):
+        return self._current_hour in (10, 20)
+
+    def is_at_quarter_hour_boundary(self):
+        return self.time_tuple[2] in (0,15,30,45)
+
+    def reactivation_zone(self):
+        minutes = math.floor(self.time_tuple[2] / 15)
+        return range(0,4).index(minutes)
+
     def sync_timestep(self, time_step_index):
         """Set the hour of the simulation according to the given time step"""
         self._current_timestep = time_step_index

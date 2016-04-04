@@ -41,6 +41,11 @@ according to input demand, inlet/ambient temperature, and heating element state.
         """Configuration for this heater"""
         return self._config
 
+    @property
+    def temperature(self):
+        """Current temperature of the heater, in degC"""
+        return self._temperature
+
     def go_to_low_power_mode(self):
         """Change temperature deadband to (low, low_upper)"""
         self._lower_limit = self.configuration.low_power_lower_limit
