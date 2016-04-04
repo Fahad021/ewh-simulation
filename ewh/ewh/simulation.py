@@ -5,6 +5,7 @@ import pprint
 import csv
 import os.path
 import statistics
+import math
 
 import environment
 import ewh
@@ -66,6 +67,7 @@ class SimulationHub(object):
             elif self._environment.is_in_reactivation_period() and self._environment.is_at_quarter_hour_boundary():
                 # send a REGULAR power signal to comms population a bit at a time
                 zone = self._environment.reactivation_zone()
+                logging.info("Zone: {0}".format(zone))
                 if zone == 0:
                     self.reactivation_zone_setters()
                 self.reactivation_zone_boundary_step(zone)
@@ -78,20 +80,10 @@ class SimulationHub(object):
 
     def reactivation_zone_setters(self):
         """Build the zone mapping for the reactivation hour based on temperature distributions"""
-        comms_mean = mean([c.temperature for c in self._comms_population])
-        low_population = [c for c in self._comms_population if c.temperature <= comms_mean]
-        high_population = [c for c in self._comms_population if c.temperature > comms_mean]
-        low_mean = mean([c.temperature for c in low_population])
-        high_mean = mean([c.temperature for c in high_population])
-
-        low_low = [c for c in self._reactivation_low_population if c.temperature <= low_mean]
-        high_low = [c for c in self._reactivation_high_population if c.temperature <= high_mean]
-        self._reactivation_zone_mappings = (
-            low_low,
-            list(set(self._reactivation_low_population) - set(low_low)),
-            high_low,
-            list(set(self._reactivation_high_population) - set(high_low)),
-        )
+        pop = sorted(self._comms_population, key=lambda c: c.temperature)
+        size_per_chunk = math.ceil(len(pop)/4)
+        self._reactivation_zone_mappings = list(chunks(self._comms_population, size_per_chunk))
+        logging.debug("Zone Mapping Sizes: {0}".format(list(map(len, self._reactivation_zone_mappings))))
 
     def reactivation_zone_boundary_step(self, zone):
         zone_subset = self._reactivation_zone_mappings[zone]
@@ -212,6 +204,11 @@ def mean(population):
         return statistics.mean(population)
     except statistics.StatisticsError:
         return 0
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
 
 def build_small_tank_population(population_size, env):
     return [controller.make_controller_and_heater(TankSize.SMALL, env=env, cid=i, randomize=True) for i in range(population_size)]
