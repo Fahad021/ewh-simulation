@@ -11,13 +11,22 @@ from states import TankSize
 import simulation
 import environment
 
+DIVIDER_CHOICES = (
+    ('RANDOM_SIZE', simulation.randomize_subset_variable_limited_size),
+    ('UNIFORM_SIZE', simulation.randomize_subset_constant_size),
+    ('ENTIRE_POPULATION', simulation.entire_population),
+)
+
 def main():
     sim = simulation.SimulationHub(**vars(parse_args()))
     sim.run()
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--seed", help="rng seed", type=int)
+    parser.add_argument("--seed",
+        help="random number generator seed",
+        metavar="SEED",
+        type=int)
     parser.add_argument("--input-csv",
         dest="csv_directory",
         help="directory containing input csv data files",
@@ -50,13 +59,6 @@ def parse_args():
         help="name of output log file",
         metavar="OUTPUT_LOG",
         type=str)
-    parser.add_argument('--log-level',
-        dest="log_level",
-        choices=['INFO', 'DEBUG'],
-        default="DEBUG")
-    parser.add_argument('--reset-log',
-        dest="reset_log",
-        action="store_true")
     parser.add_argument('--hub-interval',
         help="time steps per hub recalculate/message delivery",
         dest="hub_interval",
@@ -64,7 +66,7 @@ def parse_args():
         default=5,
         type=int)
     parser.add_argument('--scaling-factor',
-        help="time steps per hour",
+        help="number of time steps per hour",
         default=60,  # once per minute,
         dest="time_scaling_factor",
         metavar="TSF",
@@ -77,8 +79,17 @@ def parse_args():
         dest="output_directory",
         help="name of csv output directory",
         type=str,
-        metavar="DIR_NAME",
-    )
+        metavar="DIR_NAME")
+    parser.add_argument('--subset-divider',
+        dest="subset_divider_type",
+        help="algorithm to divide comms/non-comms subsets, defaults to entire population has comms",
+        choices=[c[0] for c in DIVIDER_CHOICES],
+        default=DIVIDER_CHOICES[2][0])  # ENTIRE_POPULATION
+    parser.add_argument('--subset-size',
+        dest="subset_size",
+        help="maximum comms subset size",
+        default=100000,
+        type=int)
 
     args = parser.parse_args()
 
@@ -91,13 +102,17 @@ def parse_args():
     else:
         args.tank_size = TankSize.LARGE
 
-    if args.reset_log:
-        # clear the log file
-        with open(args.log_file, 'w'):
-            pass
+    # clear the log file
+    with open(args.log_file, 'w'):
+        pass
 
-    log_level = getattr(logging, args.log_level, None)
-    logging.basicConfig(filename=args.log_file, level=log_level)
+    # get mapped divider function
+    for choice in DIVIDER_CHOICES:
+        if choice[0] == args.subset_divider_type:
+            args.subset_divider = choice[1]
+            break
+
+    logging.basicConfig(filename=args.log_file, level='DEBUG')
     logging.info("----Starting simulation at {0}----".format(time.strftime('%X %x %Z')))
     logging.info("Simulation Arguments: {0}".format(pprint.pformat(args)))
 
@@ -111,6 +126,7 @@ def parse_args():
             pass  # OK if already exists
 
     args.end_time_step = min(args.end_time_step, 8760 * args.time_scaling_factor)
+    args.subset_size = min(args.subset_size, args.population_size)
 
     return args
 

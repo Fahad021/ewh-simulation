@@ -29,6 +29,11 @@ class SimulationHub(object):
         self._output_dir = None if kwargs['suppress_output'] else kwargs['output_directory']
         self._population_mapping = []
 
+        self._divider = kwargs['subset_divider']
+        self._divider_size = kwargs['subset_size']
+        self._comms_population = []
+        self._non_comms_population = self._population
+
     def run(self):
         try:
             for time_step_index in self._time_step_range:
@@ -49,14 +54,18 @@ class SimulationHub(object):
             # calc and send some messages
             # TODO: clean this up
             if self._environment.is_at_peak_boundary():
-                self.send_and_poll(self._population, [], [])
+                # save comms/non-comms subsets according to divider algorithm
+                self._comms_population, self._non_comms_population = self._divider(self._population, self._divider_size)
+                # send a LOW power signal to comms population
+                self.send_and_poll(self._comms_population, [], self._non_comms_population)
             elif self._environment.is_at_non_peak_boundary():
-                self.send_and_poll([], self._population, [])
+                # send a REGULAR power signal to comms population
+                self.send_and_poll([], self._comms_population, self._non_comms_population)
             else:
+                # update temps in ewh as normal
                 self.send_and_poll([], [], self._population)
         else:
             # hub does nothing this step - just update temperatures in ewhs
-            logging.info('Non-hub')
             self.send_and_poll([], [], self._population)
 
     def send_and_poll(self, low_power_subset, regular_power_subset, unused_subset):
@@ -134,8 +143,12 @@ class SimulationHub(object):
             'total_comms_population_size': total_comms,  # number of controllers with communication capabilities
             'comms_temps_mean': comms_mean,
             'comms_temps_pstdev': comms_pstdev,
+            'comms_temps_lowest': min(comms_temps, default=0),
+            'comms_temps_highest': max(comms_temps, default=0),
             'non_comms_mean': non_comms_mean,
             'non_comms_temps_pstdev': non_comms_pstdev,
+            'non_comms_temps_lowest': min(non_comms_temps, default=0),
+            'non_comms_temps_highest': max(non_comms_temps, default=0),
         })
 
 def truncate_float(f, places=2):
@@ -161,6 +174,9 @@ def randomize_subset_variable_limited_size(population, max_subset_size):
         max_subset_size = len(population)
     return randomize_subset_constant_size(population, random.randint(0, max_subset_size))
 
+def entire_population(population, size):
+    return (population, [])
+
 def build_small_tank_population(population_size, env):
     return [controller.make_controller_and_heater(TankSize.SMALL, env=env, cid=i, randomize=True) for i in range(population_size)]
 
@@ -185,8 +201,12 @@ def output_population_to_csv(mapping, csv_directory):
         'total_comms_population_size',
         'comms_temps_mean',
         'comms_temps_pstdev',
+        'comms_temps_lowest',
+        'comms_temps_highest',
         'non_comms_mean',
-        'non_comms_temps_pstdev')
+        'non_comms_temps_pstdev',
+        'non_comms_temps_lowest',
+        'non_comms_temps_highest')
     location = os.path.join(csv_directory, 'population.csv')
     with open(location, 'w') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
