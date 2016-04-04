@@ -77,6 +77,7 @@ class SimulationHub(object):
             self.send_and_poll([], [], self._population)
 
     def reactivation_zone_setters(self):
+        """Build the zone mapping for the reactivation hour based on temperature distributions"""
         comms_mean = mean([c.temperature for c in self._comms_population])
         low_population = [c for c in self._comms_population if c.temperature <= comms_mean]
         high_population = [c for c in self._comms_population if c.temperature > comms_mean]
@@ -95,7 +96,7 @@ class SimulationHub(object):
     def reactivation_zone_boundary_step(self, zone):
         zone_subset = self._reactivation_zone_mappings[zone]
         the_rest = set(self._population) - set(zone_subset)
-        self.send_and_poll(zone_subset, [], the_rest)
+        self.send_and_poll([], zone_subset, the_rest)
 
     def send_and_poll(self, low_power_subset, regular_power_subset, unused_subset):
         all_temps = []
