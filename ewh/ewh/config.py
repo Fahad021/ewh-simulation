@@ -1,7 +1,8 @@
 from states import TankSize
 
-DESIRED_TEMPERATURE = 60  # in celcius
-REGULAR_POWER_LOWER_LIMIT = 55
+REGULAR_POWER_UPPER_LIMIT = 60  # in celcius
+REGULAR_POWER_LOWER_LIMIT = 58
+LOW_POWER_UPPER_LIMIT = 55
 LOW_POWER_LOWER_LIMIT = 50 # absolute lowest temp (in C) before EWH must turn itself back on
 INSULATION_THERMAL_RESISTANCE = 1
 
@@ -9,13 +10,15 @@ SPECIFIC_HEAT_OF_WATER = 1
 
 class HeaterConfiguration(object):
     def __init__(self,
-                desired_temperature=DESIRED_TEMPERATURE,
-                low_power_temperature=LOW_POWER_LOWER_LIMIT,
-                regular_power_temperature=REGULAR_POWER_LOWER_LIMIT,
+                regular_power_upper_limit=REGULAR_POWER_UPPER_LIMIT,
+                low_power_upper_limit=LOW_POWER_UPPER_LIMIT,
+                low_power_lower_limit=LOW_POWER_LOWER_LIMIT,
+                regular_power_lower_limit=REGULAR_POWER_LOWER_LIMIT,
                 tank_size=TankSize.SMALL):
-        self._desired_temperature = desired_temperature
-        self._low_power_temperature = low_power_temperature
-        self._regular_power_temperature = regular_power_temperature
+        self._regular_power_upper_limit = regular_power_upper_limit
+        self._low_power_upper_limit = low_power_upper_limit
+        self._low_power_lower_limit = low_power_lower_limit
+        self._regular_power_lower_limit = regular_power_lower_limit
 
         if tank_size == TankSize.SMALL:
             # 180 liter tank
@@ -35,32 +38,24 @@ class HeaterConfiguration(object):
     def __eq__(self, given_configuration):
         return self.info() == given_configuration.info()
 
-    def info(self):
-        return {
-            'low_power_mode_temperature_lower_limit': self.low_power_temperature,
-            'desired_temperature': self.desired_temperature,
-            'regular_mode_temperature_lower_limit': self.regular_power_temperature,
-            'tank_surface_area': self.tank_surface_area,
-            'tank_radius': self.tank_radius,
-            'tank_height': self.tank_height,
-            'insulation_thermal_resistance': self.insulation_thermal_resistance,
-            'tank_gallons': self.tank_gallons,
-        }
-
     @property
-    def desired_temperature(self):
+    def regular_power_upper_limit(self):
         """Upper limit of tank temperature during REGULAR power usage mode, in degC"""
-        return self._desired_temperature
+        return self._regular_power_upper_limit
 
     @property
-    def low_power_temperature(self):
+    def low_power_lower_limit(self):
         """Lower limit of tank temperature during LOW power usage mode, in degC"""
-        return self._low_power_temperature
+        return self._low_power_lower_limit
 
     @property
-    def regular_power_temperature(self):
+    def low_power_upper_limit(self):
+        return self._low_power_upper_limit
+
+    @property
+    def regular_power_lower_limit(self):
         """Lower limit of tank temperature during REGULAR power usage mode, in degC"""
-        return self._regular_power_temperature
+        return self._regular_power_lower_limit
 
     @property
     def tank_surface_area(self):

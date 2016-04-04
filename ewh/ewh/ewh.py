@@ -26,15 +26,15 @@ according to input demand, inlet/ambient temperature, and heating element state.
         self._hid = hid
 
         self._current_demand = self._environment.demand
-        self._lower_limit = self.configuration.regular_power_temperature
-        self._upper_limit = self.configuration.desired_temperature
+        self._lower_limit = self.configuration.regular_power_lower_limit
+        self._upper_limit = self.configuration.regular_power_upper_limit
 
         if randomize:
             # set temperature somewhere within deadband
-            self._temperature = random.uniform(self.configuration.regular_power_temperature, self.configuration.desired_temperature)
+            self._temperature = random.uniform(self.configuration.regular_power_lower_limit, self.configuration.regular_power_upper_limit)
         else:
             # set to desired temperature
-            self._temperature = self.configuration.desired_temperature
+            self._temperature = self.configuration.regular_power_upper_limit
 
     @property
     def configuration(self):
@@ -42,14 +42,14 @@ according to input demand, inlet/ambient temperature, and heating element state.
         return self._config
 
     def go_to_low_power_mode(self):
-        """Change temperature deadband to (low, regular)"""
-        self._lower_limit = self.configuration.low_power_temperature
-        self._upper_limit = self.configuration.regular_power_temperature
+        """Change temperature deadband to (low, low_upper)"""
+        self._lower_limit = self.configuration.low_power_lower_limit
+        self._upper_limit = self.configuration.low_power_upper_limit
 
     def go_to_regular_power_mode(self):
         """Change temperature deadband to (regular, desired)"""
-        self._lower_limit = self.configuration.regular_power_temperature
-        self._upper_limit = self.configuration.desired_temperature
+        self._lower_limit = self.configuration.regular_power_lower_limit
+        self._upper_limit = self.configuration.regular_power_upper_limit
 
     def heater_needs_to_turn_off(self):
         """Return True if heater is on and is OK to turn off"""
@@ -100,20 +100,6 @@ according to input demand, inlet/ambient temperature, and heating element state.
             self._on_state = OnState.OFF
         elif self.heater_needs_to_turn_on():
             self._on_state = OnState.ON
-
-    def info(self, include_config=False):
-        d = {
-            'current_temperature': self._temperature,
-            'current_lower_limit': self._lower_limit,
-            'current_demand': self._current_demand,
-            'current_state': str(self._on_state),
-            'id': self._hid,
-        }
-
-        if include_config:
-            d['configuration'] = self.configuration.info()
-
-        return d
 
     def data_output(self):
         """CSV output for this heater at the current timestep"""
