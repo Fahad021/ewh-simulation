@@ -113,6 +113,9 @@ def parse_args():
             args.subset_divider = choice[1]
             break
 
+    if args.subset_divider_type == 'NO_COMMS':
+        args.no_comms = True
+
     logging.basicConfig(filename=args.log_file, level='DEBUG')
     logging.info("----Starting simulation at {0}----".format(time.strftime('%X %x %Z')))
     logging.info("Simulation Arguments: {0}".format(pprint.pformat(args)))

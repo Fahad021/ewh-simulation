@@ -22,6 +22,8 @@ class SimulationHub(object):
             builder = build_large_tank_population
         self._population = builder(kwargs['population_size'], self._environment)
 
+        self._comms_disabled = kwargs['no_comms'] or False
+
         random.seed(kwargs['seed'])
 
         self._time_step_range = make_range(kwargs['start_time_step'], kwargs['end_time_step'])
@@ -56,7 +58,8 @@ class SimulationHub(object):
         self._environment.sync_timestep(time_step_index)
         logging.info('Time Step {0} (total hour {1}) (day {2} time {3}:{4})'.format(time_step_index, self._environment.current_hour, *self._environment.time_tuple))
 
-        if (time_step_index % self._hub_interval) == 0:
+        is_hub_interval = (time_step_index % self._hub_interval) == 0
+        if is_hub_interval and not self._comms_disabled:
             # calc and send some messages
             # TODO: clean this up
             if self._environment.is_at_peak_boundary():
