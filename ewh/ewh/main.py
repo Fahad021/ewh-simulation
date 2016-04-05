@@ -91,6 +91,11 @@ def parse_args():
         help="maximum comms subset size",
         default=100000,
         type=int)
+    parser.add_argument('--reactivation-hours',
+        dest="reactivation_hours",
+        help="number of hours over which the reactivation period occurs",
+        default=1,
+        type=int)
 
     args = parser.parse_args()
 

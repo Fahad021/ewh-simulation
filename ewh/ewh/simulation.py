@@ -14,7 +14,8 @@ from states import TankSize
 
 class SimulationHub(object):
     def __init__(self, **kwargs):
-        self._environment = environment.setup_environment(kwargs['csv_directory'], kwargs['time_scaling_factor'])
+        env_args = (kwargs['csv_directory'], kwargs['time_scaling_factor'], kwargs['reactivation_hours'])
+        self._environment = environment.setup_environment(*env_args)
 
         if kwargs['tank_size'] == TankSize.SMALL:
             builder = build_small_tank_population
@@ -22,7 +23,7 @@ class SimulationHub(object):
             builder = build_large_tank_population
         self._population = builder(kwargs['population_size'], self._environment)
 
-        self._comms_disabled = kwargs['no_comms'] or False
+        self._comms_disabled = kwargs.get('no_comms', False)
 
         random.seed(kwargs['seed'])
 
@@ -67,11 +68,12 @@ class SimulationHub(object):
                 self._comms_population, self._non_comms_population = self._divider(self._population, self._divider_size)
                 # send a LOW power signal to comms population
                 self.send_and_poll(self._comms_population, [], self._non_comms_population)
-            elif self._environment.is_in_reactivation_period() and self._environment.is_at_quarter_hour_boundary():
+            elif self._environment.is_in_reactivation_period() and self._environment.is_at_zone_boundary():
                 # send a REGULAR power signal to comms population a bit at a time
                 zone = self._environment.reactivation_zone()
                 if zone == 0:
                     self.reactivation_zone_setters()
+                logging.info('Zone {0} hour {1} timestep {2}'.format(zone, self._environment.current_hour, time_step_index))
                 self.reactivation_zone_boundary_step(zone)
             else:
                 # update temps in ewh as normal

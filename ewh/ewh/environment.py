@@ -7,11 +7,12 @@ import math
 import config
 
 class Environment(object):
-    def __init__(self, mapping, time_scaling_factor, start_hour=0):
+    def __init__(self, mapping, time_scaling_factor, reactivation_hours):
         self._mapping = mapping
-        self._current_hour = start_hour
+        self._current_hour = 0
         self._tsf = time_scaling_factor
-        self._current_timestep = start_hour
+        self._current_timestep = 0
+        self._reactivation_hours = reactivation_hours
 
     @property
     def current_tuple(self):
@@ -64,14 +65,19 @@ class Environment(object):
         return during_peak and at_boundary
 
     def is_in_reactivation_period(self):
-        return self.time_tuple[1] in (10, 20)
+        morning = list(range(10, 10 + self._reactivation_hours))
+        evening = list(range(20, 20 + self._reactivation_hours))
+        return self.time_tuple[1] in (morning + evening)
 
-    def is_at_quarter_hour_boundary(self):
-        return self.time_tuple[2] in (0,15,30,45)
+    def is_at_zone_boundary(self):
+        minutes = self._reactivation_hours * 60
+        return self.time_tuple[2] in (0,minutes/4,minutes/2, 3*minutes/4)
 
     def reactivation_zone(self):
-        minutes = math.floor(self.time_tuple[2] / 15)
-        return range(0,4).index(minutes)
+        minutes_per_zone = (self._reactivation_hours * 60) / 4
+        _, hour, minute = self.time_tuple
+        minutes_since_reactivation_started = ((hour % 10) * 60) + minute
+        return math.floor(minutes_since_reactivation_started / minutes_per_zone)
 
     def sync_timestep(self, time_step_index):
         """Set the hour of the simulation according to the given time step"""
@@ -112,7 +118,7 @@ the demand (in L/h) at that hour.
         rows = [float(row['Litres/Hour']) for row in reader]
     return rows
 
-def setup_environment(csv_directory, time_scaling_factor):
+def setup_environment(csv_directory, time_scaling_factor, reactivation_hours):
     """Build up an environment from the time/temperature/demand mappings in the
 given CSV directory. The given TSF is also included.
 """
@@ -124,7 +130,7 @@ given CSV directory. The given TSF is also included.
     # now we want a mapping of demand/ambient/inlet for every hour
     # [(demand for hour 0, ambient 0, inlet 0), (demand 1, ambient 1, inlet 1), ...]
     mapping = zipper(yearly_demand, ambient, inlet)
-    _environment_singleton = Environment(mapping, time_scaling_factor)
+    _environment_singleton = Environment(mapping, time_scaling_factor, reactivation_hours)
     return _environment_singleton
 
 def zipper(demand, ambient, inlet):
