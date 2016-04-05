@@ -64,7 +64,7 @@ class Environment(object):
         return during_peak and at_boundary
 
     def is_in_reactivation_period(self):
-        return self._current_hour in (10, 20)
+        return self.time_tuple[1] in (10, 20)
 
     def is_at_quarter_hour_boundary(self):
         return self.time_tuple[2] in (0,15,30,45)
