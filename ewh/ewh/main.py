@@ -15,6 +15,7 @@ DIVIDER_CHOICES = (
     ('RANDOM_SIZE', simulation.randomize_subset_variable_limited_size),
     ('UNIFORM_SIZE', simulation.randomize_subset_constant_size),
     ('ENTIRE_POPULATION', simulation.entire_population),
+    ('NO_COMMS', simulation.no_comms),
 )
 
 def main():

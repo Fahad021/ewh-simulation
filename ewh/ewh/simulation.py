@@ -67,7 +67,6 @@ class SimulationHub(object):
             elif self._environment.is_in_reactivation_period() and self._environment.is_at_quarter_hour_boundary():
                 # send a REGULAR power signal to comms population a bit at a time
                 zone = self._environment.reactivation_zone()
-                logging.info("Zone: {0}".format(zone))
                 if zone == 0:
                     self.reactivation_zone_setters()
                 self.reactivation_zone_boundary_step(zone)
@@ -83,7 +82,6 @@ class SimulationHub(object):
         pop = sorted(self._comms_population, key=lambda c: c.temperature)
         size_per_chunk = math.ceil(len(pop)/4)
         self._reactivation_zone_mappings = list(chunks(self._comms_population, size_per_chunk))
-        logging.debug("Zone Mapping Sizes: {0}".format(list(map(len, self._reactivation_zone_mappings))))
 
     def reactivation_zone_boundary_step(self, zone):
         zone_subset = self._reactivation_zone_mappings[zone]
@@ -195,6 +193,9 @@ def randomize_subset_variable_limited_size(population, max_subset_size):
     if max_subset_size > len(population):
         max_subset_size = len(population)
     return randomize_subset_constant_size(population, random.randint(0, max_subset_size))
+
+def no_comms(population, size):
+    return ([], population)
 
 def entire_population(population, size):
     return (population, [])
