@@ -75,6 +75,9 @@ class SimulationHub(object):
                     self.reactivation_zone_setters()
                 logging.info('Zone {0} hour {1} timestep {2}'.format(zone, self._environment.current_hour, time_step_index))
                 self.reactivation_zone_boundary_step(zone)
+            elif self._environment.is_at_non_peak_boundary() and (self._environment.reactivation_hours == 0):
+                # send REGULAR power signal to everyone all at once
+                self.send_and_poll([], self._comms_population, self._non_comms_population)
             else:
                 # update temps in ewh as normal
                 self.send_and_poll([], [], self._population)

@@ -79,6 +79,10 @@ class Environment(object):
         minutes_since_reactivation_started = ((hour % 10) * 60) + minute
         return math.floor(minutes_since_reactivation_started / minutes_per_zone)
 
+    @property
+    def reactivation_hours(self):
+        return self._reactivation_hours
+
     def sync_timestep(self, time_step_index):
         """Set the hour of the simulation according to the given time step"""
         self._current_timestep = time_step_index
