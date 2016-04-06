@@ -7,12 +7,13 @@ import math
 import config
 
 class Environment(object):
-    def __init__(self, mapping, time_scaling_factor, reactivation_hours):
+    def __init__(self, mapping, time_scaling_factor, reactivation_hours, start_time_step=0):
         self._mapping = mapping
         self._current_hour = 0
         self._tsf = time_scaling_factor
-        self._current_timestep = 0
+        self._current_timestep = start_time_step
         self._reactivation_hours = reactivation_hours
+        self.sync_timestep(start_time_step)
 
     @property
     def current_tuple(self):
@@ -122,7 +123,7 @@ the demand (in L/h) at that hour.
         rows = [float(row['Litres/Hour']) for row in reader]
     return rows
 
-def setup_environment(csv_directory, time_scaling_factor, reactivation_hours):
+def setup_environment(csv_directory, time_scaling_factor, reactivation_hours, start_time_step=0):
     """Build up an environment from the time/temperature/demand mappings in the
 given CSV directory. The given TSF is also included.
 """
@@ -134,7 +135,7 @@ given CSV directory. The given TSF is also included.
     # now we want a mapping of demand/ambient/inlet for every hour
     # [(demand for hour 0, ambient 0, inlet 0), (demand 1, ambient 1, inlet 1), ...]
     mapping = zipper(yearly_demand, ambient, inlet)
-    _environment_singleton = Environment(mapping, time_scaling_factor, reactivation_hours)
+    _environment_singleton = Environment(mapping, time_scaling_factor, reactivation_hours, start_time_step=start_time_step)
     return _environment_singleton
 
 def zipper(demand, ambient, inlet):

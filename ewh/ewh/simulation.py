@@ -14,7 +14,7 @@ from states import TankSize
 
 class SimulationHub(object):
     def __init__(self, **kwargs):
-        env_args = (kwargs['csv_directory'], kwargs['time_scaling_factor'], kwargs['reactivation_hours'])
+        env_args = (kwargs['csv_directory'], kwargs['time_scaling_factor'], kwargs['reactivation_hours'], kwargs['start_time_step'])
         self._environment = environment.setup_environment(*env_args)
 
         if kwargs['tank_size'] == TankSize.SMALL:
@@ -73,7 +73,6 @@ class SimulationHub(object):
                 zone = self._environment.reactivation_zone()
                 if zone == 0:
                     self.reactivation_zone_setters()
-                logging.info('Zone {0} hour {1} timestep {2}'.format(zone, self._environment.current_hour, time_step_index))
                 self.reactivation_zone_boundary_step(zone)
             elif self._environment.is_at_non_peak_boundary() and (self._environment.reactivation_hours == 0):
                 # send REGULAR power signal to everyone all at once
