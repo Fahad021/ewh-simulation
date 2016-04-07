@@ -74,7 +74,7 @@ according to input demand, inlet/ambient temperature, and heating element state.
         tsf = self._environment.time_scaling_factor
         sa = to_square_feet(self.configuration.tank_surface_area)
         # G = surface area [ft^2] / thermal resistance of tank insulation [h ft^2 F/Btu]
-        g = sa * tsf / self.configuration.insulation_thermal_resistance
+        g = sa / self.configuration.insulation_thermal_resistance
         # B(t) = demand [Gal] * 8.3 * (specific heat of water = 1)
         b = to_gallons(self._current_demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         # C = equivalent thermal mass of tank
