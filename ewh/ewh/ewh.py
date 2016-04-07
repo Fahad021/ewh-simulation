@@ -71,8 +71,10 @@ according to input demand, inlet/ambient temperature, and heating element state.
     def new_temperature(self, last_temperature):
         """Given the temperature at the last timestep, calculate a new temperature
         according to the solution to the PDE in the Dolan/Nehrir/Gerez paper"""
+        tsf = self._environment.time_scaling_factor
+        sa = to_square_feet(self.configuration.tank_surface_area)
         # G = surface area [ft^2] / thermal resistance of tank insulation [h ft^2 F/Btu]
-        g = to_square_feet(self.configuration.tank_surface_area) / self.configuration.insulation_thermal_resistance
+        g = sa * tsf / self.configuration.insulation_thermal_resistance
         # B(t) = demand [Gal] * 8.3 * (specific heat of water = 1)
         b = to_gallons(self._current_demand) * 8.3 * config.SPECIFIC_HEAT_OF_WATER
         # C = equivalent thermal mass of tank
@@ -80,7 +82,7 @@ according to input demand, inlet/ambient temperature, and heating element state.
         c = 8.3 * self.configuration.tank_gallons * config.SPECIFIC_HEAT_OF_WATER
         r_prime = 1.0 / (g + b)
         # scalar = e^((-1/R'C)(t - tau)) = e^(-1/R'C(TSF))
-        scalar = math.exp(-1/(r_prime * c * self._environment.time_scaling_factor))
+        scalar = math.exp(-1/(r_prime * c * tsf))
 
         ambient = to_fahrenheit(self._environment.ambient_temperature)
         inlet = to_fahrenheit(self._environment.inlet_temperature)
