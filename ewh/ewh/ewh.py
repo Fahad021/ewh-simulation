@@ -120,7 +120,7 @@ according to input demand, inlet/ambient temperature, and heating element state.
 
 def randomize_demand(demand):
     """Return a randomized demand when given a static demand"""
-    return random.uniform(0, 2) * demand
+    return random.uniform(0, 2.25) * demand
 
 def make_heater(size, env=None, hid=None, randomize=False):
     """Create a heater object of a given size"""

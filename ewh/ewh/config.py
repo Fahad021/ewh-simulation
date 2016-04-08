@@ -1,10 +1,10 @@
 from states import TankSize
 
-REGULAR_POWER_UPPER_LIMIT = 60  # in celcius
-REGULAR_POWER_LOWER_LIMIT = 58
-LOW_POWER_UPPER_LIMIT = 55
-LOW_POWER_LOWER_LIMIT = 50 # absolute lowest temp (in C) before EWH must turn itself back on
-INSULATION_THERMAL_RESISTANCE = 20
+REGULAR_POWER_UPPER_LIMIT = 58  # in celcius
+REGULAR_POWER_LOWER_LIMIT = 56
+LOW_POWER_UPPER_LIMIT = 54
+LOW_POWER_LOWER_LIMIT = 53 # absolute lowest temp (in C) before EWH must turn itself back on
+INSULATION_THERMAL_RESISTANCE = 1.5
 
 SPECIFIC_HEAT_OF_WATER = 1
 
