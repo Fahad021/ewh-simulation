@@ -1,0 +1,25 @@
+clear; clc; close all;
+EWH_10000 = csvread('10000ewh.csv');
+EWH_1000 = csvread('1000ewh.csv');
+EWH_100 = csvread('100ewh.csv');
+
+j=1;
+for i=1:30
+    x(j,1)= EWH_1000(i,1); %day
+    Saved_10000(j,1) = EWH_10000(i,2);
+    Saved_1000(j,1) = EWH_1000(i,2);
+    Saved_100(j,1) = EWH_100(i,2);
+    j=j+1;
+end
+figure;
+scatter(x,Saved_10000); hold on
+scatter(x,Saved_1000); hold on
+scatter(x,Saved_100); hold on
+axis([0 30 0 5])
+lsline;
+title('Line of Best Fit for Peak Demand Reduction (Zero hour Reactivation, 180L)')
+legend('10,000 EWH','1,000 EWH','100 EWH','Location','southoutside','Orientation','horizontal');
+legend('boxon')
+xlabel('Day of the Month')
+ylabel('Kilowatts')
+saveas(gcf,'LineofBestFit','epsc');

@@ -1,0 +1,124 @@
+% ErrorBar
+ds = csvread('population.csv',1,0);
+day = input('What day do you want to check ');
+EWH_type = input('180 or 270 liters? (Type 180 is small or 270 if large) ');
+check = 1440*(day-1)+1;
+j=1;
+if EWH_type == 270
+    PowerRating = 4.2; % kW, EWH size 270l --> 4.2
+    limits_ewh = [0 24 -.22 2.2];
+else
+    PowerRating = 2.8; % kW EWH size 180l --> 2.8
+    limits_ewh = [0 24 -.22 2.2];
+end
+
+% Power Consumption
+        % January_p = csvread('January8.csv',0,1);
+        % June_p = csvread('June24.csv',0,1);
+January_p = csvread('FitResult.csv');
+MaxJanuary = 37830;
+MaxJune = 16760;
+EWH_p = input('How many EWHs ');
+j_p=1;
+
+for i=0:1440
+        x(j,1) = (ds(check + i,1)-check-1)/60;
+        y(j,1) = ds(check + i,2);
+        z(j,1) = ds(check + i,8);
+        high(j,1) = ds(check + i,11);
+        low(j,1) = ds(check + i,10);
+        TotalOn(j,1) = ds(check + i,3);
+        timeJan(j,1) = January_p(i+1,1)/60;
+        PowerJan(j,1) = January_p(i+1,2);
+        j = j+1;
+end
+limits = [0 24 49 59];
+limits_power = [0 24 -.4 4.4];
+y1=[-.4 60];
+y1_p =[-.4 60];
+AbsMin = [50]; RegHigh = [58];  RegLow= [56]; LowHigh = [52.5]; LowLow = [51];
+BMP = [6]; EMP = [10]; BEP = [16]; EEP = [20];
+temperaturetitle = 'Temperature on January 8 (Two Hour Reactivation Period, 180L)';
+powertitle = 'Electrical Demand on January 8 (Two Hour Reactivation Period, 180L)';
+% temperaturetitle = 'Temperature on January 8 (No Communications, 270L)';
+% powertitle = 'Electrical Demand on January 8 (No Communications, 270L)';
+% Plot on top of each other
+figure;
+subplot(2,1,1);
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.5); hold on;
+plot(x,y,'b',x,y+z,'g',x, high,'m');hold on;
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.25); hold on;
+plot(x, polyval (AbsMin,x),'-.r');
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.5); hold on;
+plot(x,y-z,'g',x,low,'m');
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.25); hold on;
+%y1 = get(gca,'ylim'); hold on;
+plot([BMP BMP],y1,':k',[EMP EMP],y1,':k',[BEP BEP],y1,':k',[EEP EEP],y1,':k'); hold on;
+plot(x, polyval (RegHigh,x),'-.k',x, polyval (RegLow,x),'-.k',x, polyval (LowHigh,x),'-.k',x, polyval (LowLow,x),'-.k');
+legend('Avg. Temperature','Standard Deviation','Highest/Lowest Temperature','Location','southoutside','Orientation','horizontal');
+legend('boxon')
+title(temperaturetitle)
+axis(limits)
+xlabel('Hour of the Day')
+ylabel('Temperature in Celsius')
+% Now Power
+subplot(2,1,2);
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.5); hold on;
+plot(timeJan,(4*(PowerJan))/MaxJanuary, 'color', 'b'); hold on;
+%y1_p = get(gca,'ylim'); hold on;
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.25); hold on;
+axis(limits_power)
+title(powertitle)
+xlabel('Hour of the Day')
+ylabel('Ten Thousand Megawatts')
+yyaxis right
+plot(x,PowerRating*TotalOn/EWH_p); hold on;
+axis(limits_ewh)
+ylabel('Kilowatts')
+legend('Grid Demand','Electric Water Heater Demand','Location','southoutside','Orientation','horizontal');
+legend('boxon')
+plot([BMP BMP],y1_p,':k'); hold on;
+plot([EMP EMP],y1_p,':k'); hold on;
+plot([BEP BEP],y1_p,':k'); hold on;
+plot([EEP EEP],y1_p,':k'); hold on;
+saveas(gcf,'Temp&Power','epsc');
+% Temperature Individually
+figure;
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.5); hold on;
+plot(x,y,'b',x,y+z,'g',x, high,'m');hold on;
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.25); hold on;
+plot(x, polyval (AbsMin,x),'-.r');
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.5); hold on;
+plot(x,y-z,'g',x,low,'m');
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.25); hold on;
+%y1 = get(gca,'ylim'); hold on;
+plot([BMP BMP],y1,':k',[EMP EMP],y1,':k',[BEP BEP],y1,':k',[EEP EEP],y1,':k'); hold on;
+plot(x, polyval (RegHigh,x),'-.k',x, polyval (RegLow,x),'-.k',x, polyval (LowHigh,x),'-.k',x, polyval (LowLow,x),'-.k');
+legend('Avg. Temperature','Standard Deviation','Highest/Lowest Temperature','Location','southoutside','Orientation','horizontal');
+legend('boxoff')
+title(temperaturetitle)
+axis(limits)
+xlabel('Hour of the Day')
+ylabel('Temperature in Celsius')
+saveas(gcf,'Temperature','epsc');
+% Power Individually
+figure;
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.5); hold on;
+plot(timeJan,(4*(PowerJan))/MaxJanuary, 'color', 'b'); hold on;
+%y1_p = get(gca,'ylim'); hold on;
+set(findall(gca, 'Type', 'Line'),'LineWidth',1.25); hold on;
+axis(limits_power)
+title(powertitle)
+xlabel('Hour of the Day')
+ylabel('Ten Thousand Megawatts')
+yyaxis right
+plot(x,PowerRating*TotalOn/EWH_p); hold on;
+axis(limits_ewh)
+ylabel('Kilowatts')
+legend('Grid Demand','Electric Water Heater Demand','Location','southoutside','Orientation','horizontal');
+legend('boxon')
+plot([BMP BMP],y1_p,':k'); hold on;
+plot([EMP EMP],y1_p,':k'); hold on;
+plot([BEP BEP],y1_p,':k'); hold on;
+plot([EEP EEP],y1_p,':k'); hold on;
+saveas(gcf,'Power','epsc');

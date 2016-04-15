@@ -1,0 +1,30 @@
+clear; clc; close all;
+% fitresult = csvread('fitresult.csv');
+j=1;
+for i=0:20
+    x(j,1)=i*0.05;
+    y(j,1)=146.65-((x(j,1)*2.557)/2);
+    j=j+1;
+end
+figure;
+% Create line
+annotation('line',[0.207638888888889 0.207638888888889],...
+    [0.784416666666668 0.706666666666668],'LineWidth',1); hold on;
+
+% Create textarrow
+annotation('textarrow',[0.207638888888889 0.292857142857143],...
+    [0.708047619047622 0.707142857142858],'String',{'128 MW '},'LineWidth',1); hold on;
+
+plot(x,y); hold on
+title('Impact of Network Size on Peak Demand (Zero hour Reactivation, 180L)')
+xlabel('Electric Water Heater Population (Millions)')
+ylabel('Grid Peak Demand (GigaWatts)')
+% xl = [.365 .365];
+% yl = [.62 .685];
+% xl = [.15 .15];
+% yl = [.625 .85];
+% annotation('line',xl,yl)
+% xa = [0.2 .44];
+% ya = [.62 .62];
+% annotation('textarrow',xa,ya,'String','375 MW')
+saveas(gcf,'PopulationImpact','epsc');

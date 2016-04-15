@@ -1,0 +1,34 @@
+% January_p = csvread('January8.csv',0,1);
+% %June_p = csvread('June24.csv',0,1);
+% MaxJanuary = 37610;
+% MaxJune = 16760;
+% newFolder = input('Name of folder ','s');
+% cd(newFolder);
+ds_p = csvread('population.csv',1,0);
+day_p = input('What day do you want to check ');
+EWH_p = input('How many EWHs ');
+check_p = 1440*(day_p-1)+1;
+j_p=1;
+for i_p=0:1440
+        x(j_p,1) = (ds_p(check_p + i_p,1)- check_p - 1)/60;
+        y(j_p,1) = 4.2*ds_p(check_p + i_p,3);
+        j_p = j_p+1;
+end
+
+limits_power = [0 24 -.1 1.1];
+BMP = [6]; EMP = [10]; BEP = [16]; EEP = [20];
+figure;
+% plot(linspace(0,23,24),(January_p)/MaxJanuary, 'color', 'b'); hold on;
+
+plot(x,y/EWH_p); hold on;
+y1_p = get(gca,'ylim'); hold on;
+plot([BMP BMP],y1_p,'--k'); hold on;
+plot([EMP EMP],y1_p,'--k'); hold on;
+plot([BEP BEP],y1_p,'--k'); hold on;
+plot([EEP EEP],y1_p,'--k');
+axis(limits_power)
+set(findall(gca, 'Type', 'Line'),'LineWidth',2);
+title('Hourly Power Consumption on January 8')
+xlabel('Hour of the Day')
+ylabel('Megawatts')
+% saveas(gcf,'Power','epsc');
