@@ -49,7 +49,6 @@ class SimulationHub(object):
                 self.do_timestep(time_step_index)
         except KeyboardInterrupt:
             logging.info('Simulation Interrupted')
-            pass  # don't throw stack trace, just write to csv and finish up
         finally:
             if self._output_dir is not None:
                 logging.info('Writing to CSV at {0}'.format(self._output_dir))
@@ -197,8 +196,7 @@ def randomize_subset_constant_size(population, constant_subset_size):
 def randomize_subset_variable_limited_size(population, max_subset_size):
     """Return a tuple containing a random subset of an iterable of a random size
     and its set complement."""
-    if max_subset_size > len(population):
-        max_subset_size = len(population)
+    max_subset_size = min(max_subset_size, len(population))
     return randomize_subset_constant_size(population, random.randint(0, max_subset_size))
 
 def no_comms(population, size):

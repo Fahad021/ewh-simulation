@@ -103,11 +103,7 @@ def parse_args():
         parser.error("Directory '{0}' does not exist.".format(args.csv_directory))
         sys.exit(1)
 
-    if args.tank_size == 180:
-        args.tank_size = TankSize.SMALL
-    else:
-        args.tank_size = TankSize.LARGE
-
+    args.tank_size = TankSize.SMALL if args.tank_size == 180 else TankSize.LARGE
     # clear the log file
     with open(args.log_file, 'w'):
         pass
@@ -142,7 +138,7 @@ def parse_args():
 def output_simulation_info(directory, args):
     filename = path.join(directory, 'info.txt')
     with open(filename, 'w') as f:
-        f.write(str('Time Started: {0}\n'.format(time.strftime('%X %x %Z'))))
+        f.write('Time Started: {0}\n'.format(time.strftime('%X %x %Z')))
         for arg_name, arg_value in vars(args).items():
             f.write('{0}: {1}\n'.format(arg_name, str(arg_value)))
 
